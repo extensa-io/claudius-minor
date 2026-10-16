@@ -17,6 +17,7 @@ export async function persistCandidate(candidate: Candidate, userId: ObjectId, c
     { $addFields: { score: { $meta: "vectorSearchScore" } } },
     { $project: { _id: 1, content: 1, category: 1, score: 1 } },
   ]).toArray();
+  // TODO(step-2)
   const decision = decideMemoryAction(candidate, neighbors);
   if (decision.action === "skip") return;
 

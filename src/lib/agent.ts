@@ -7,9 +7,10 @@ import { ChatOpenAI } from "@langchain/openai";
 import { z } from "zod";
 import { env, requiredEnv } from "@/lib/env";
 import { webSearch } from "@/lib/search";
-import { memoryNote, SYSTEM_PROMPT } from "@/lib/prompt";
-import { getCheckpointer } from "@/lib/checkpointer";
+import { SYSTEM_PROMPT, memoryNote } from "@/lib/prompt";
 import { assembleMemoryBlock, type RetrievedMemory } from "@/lib/memory";
+import { ObjectId } from "mongodb";
+import { getCheckpointer } from "@/lib/checkpointer";
 
 const webSearchTool = tool(async ({ query }) => JSON.stringify(await webSearch(query)), {
   name: "web_search", description: "Search the web for current information", schema: z.object({ query: z.string() }),
@@ -20,22 +21,21 @@ const State = Annotation.Root({ ...MessagesAnnotation.spec, memoryContext: Annot
 async function loadContext(state: typeof State.State, config: { configurable?: Record<string, unknown> }) {
   const userId = config.configurable?.userId;
   if (typeof userId !== "string") return { memoryContext: "", usedMemories: [] };
+  const owner = new ObjectId(userId);
   try {
     const { collections } = await import("@/lib/db");
-    const owner = new (await import("mongodb")).ObjectId(userId);
-    const collection = await collections.memories();
-    const profile = await collection.find({ userId: owner, status: "active" }).sort({ importance: -1 }).limit(5).toArray();
-    const human = state.messages.filter((message) => message.getType() === "human").slice(-3).map((message) => message.text).join("\n");
+    const memories = await collections.memories();
+    const profile = await memories.find({ userId: owner, status: "active" }).sort({ importance: -1 }).limit(5).toArray();
+    const query = state.messages.filter((message) => message.getType() === "human").slice(-3).map((message) => message.text).join("\\n");
     let relevant: typeof profile = [];
-    if (human) {
-      const results = await collection.aggregate([{
-        $vectorSearch: { index: "memories_vector", path: "content", query: { text: human }, numCandidates: 100, limit: 10, filter: { userId: { $eq: owner }, status: { $eq: "active" } } },
-      }, { $addFields: { score: { $meta: "vectorSearchScore" } } }, { $match: { score: { $gte: 0.65 } } }]).toArray();
-      relevant = results as typeof profile;
+    if (query) {
+      relevant = await memories.aggregate([{
+        $vectorSearch: { index: "memories_vector", path: "content", query: { text: query, model: "voyage-4" }, numCandidates: 100, limit: 10, filter: { userId: { $eq: owner }, status: { $eq: "active" } } },
+      }, { $addFields: { score: { $meta: "vectorSearchScore" } } }, { $match: { score: { $gte: 0.65 } } }]).toArray() as typeof profile;
     }
     const assembled = assembleMemoryBlock(profile, relevant);
-    if (assembled.memories.length > 0) await dispatchCustomEvent("memories_used", { memories: assembled.memories.map((memory) => ({ id: memory._id.toString(), content: memory.content, category: memory.category })) }, config);
-    return { memoryContext: assembled.text, usedMemories: assembled.memories };
+    if (assembled.memories.length) await dispatchCustomEvent("memories_used", { memories: assembled.memories.map((memory) => ({ id: memory._id.toString(), content: memory.content, category: memory.category })) }, config);
+    return { memoryContext: memoryNote(profile, relevant), usedMemories: assembled.memories };
   } catch (error) {
     console.error("Memory retrieval failed.", error instanceof Error ? error.message : "unknown error");
     return { memoryContext: "", usedMemories: [] };
@@ -60,12 +60,11 @@ const builder = new StateGraph(State)
 
 let graphPromise: Promise<ReturnType<typeof builder.compile>> | undefined;
 export async function getChatGraph() {
-  graphPromise ??= getCheckpointer().then((checkpointer) => builder.compile({ checkpointer }));
+  graphPromise ??= (async () => {
+    const checkpointer = await getCheckpointer();
+    return builder.compile({ checkpointer });
+  })();
   return graphPromise;
 }
 
-export { HumanMessage };
-export type AgentState = typeof State.State;
-export function renderMemoryNote(profile: RetrievedMemory[], relevant: RetrievedMemory[]) {
-  return memoryNote(profile, relevant);
-}
+export { HumanMessage, dispatchCustomEvent };
