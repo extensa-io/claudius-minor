@@ -21,25 +21,8 @@ const State = Annotation.Root({ ...MessagesAnnotation.spec, memoryContext: Annot
 async function loadContext(state: typeof State.State, config: { configurable?: Record<string, unknown> }) {
   const userId = config.configurable?.userId;
   if (typeof userId !== "string") return { memoryContext: "", usedMemories: [] };
-  const owner = new ObjectId(userId);
-  try {
-    const { collections } = await import("@/lib/db");
-    const memories = await collections.memories();
-    const profile = await memories.find({ userId: owner, status: "active" }).sort({ importance: -1 }).limit(5).toArray();
-    const query = state.messages.filter((message) => message.getType() === "human").slice(-3).map((message) => message.text).join("\\n");
-    let relevant: typeof profile = [];
-    if (query) {
-      relevant = await memories.aggregate([{
-        $vectorSearch: { index: "memories_vector", path: "content", query: { text: query, model: "voyage-4" }, numCandidates: 100, limit: 10, filter: { userId: { $eq: owner }, status: { $eq: "active" } } },
-      }, { $addFields: { score: { $meta: "vectorSearchScore" } } }, { $match: { score: { $gte: 0.65 } } }]).toArray() as typeof profile;
-    }
-    const assembled = assembleMemoryBlock(profile, relevant);
-    if (assembled.memories.length) await dispatchCustomEvent("memories_used", { memories: assembled.memories.map((memory) => ({ id: memory._id.toString(), content: memory.content, category: memory.category })) }, config);
-    return { memoryContext: memoryNote(profile, relevant), usedMemories: assembled.memories };
-  } catch (error) {
-    console.error("Memory retrieval failed.", error instanceof Error ? error.message : "unknown error");
-    return { memoryContext: "", usedMemories: [] };
-  }
+  // TODO(step-3)
+  return { memoryContext: "", usedMemories: [] };
 }
 
 async function agent(state: typeof State.State) {
