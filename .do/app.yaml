@@ -1,0 +1,34 @@
+name: claudius-minor
+region: nyc
+services:
+  - name: web
+    source_dir: /
+    github:
+      repo: extensa-io/claudius-minor
+      branch: main
+      deploy_on_push: false
+    run_command: pnpm start
+    build_command: pnpm install --frozen-lockfile && pnpm build
+    environment_slug: node-js
+    instance_count: 1
+    instance_size_slug: basic-xxs
+    http_port: 3000
+    envs:
+      - key: MONGODB_URI
+        scope: RUN_TIME
+        type: SECRET
+      - key: DO_MODEL_ACCESS_KEY
+        scope: RUN_TIME
+        type: SECRET
+      - key: DO_INFERENCE_BASE_URL
+        scope: RUN_TIME
+        value: https://inference.do-ai.run/v1
+      - key: CHAT_MODEL
+        scope: RUN_TIME
+        type: SECRET
+      - key: EXTRACTION_MODEL
+        scope: RUN_TIME
+        type: SECRET
+      - key: TAVILY_API_KEY
+        scope: RUN_TIME
+        type: SECRET

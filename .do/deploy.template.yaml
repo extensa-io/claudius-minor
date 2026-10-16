@@ -1,0 +1,27 @@
+spec:
+  name: claudius-minor
+  services:
+    - name: web
+      git:
+        branch: main
+        repo_clone_url: https://github.com/extensa-io/claudius-minor.git
+      source_dir: /
+      run_command: pnpm start
+      build_command: pnpm install --frozen-lockfile && pnpm build
+      environment_slug: node-js
+      instance_count: 1
+      instance_size_slug: basic-xxs
+      http_port: 3000
+      envs:
+        - key: MONGODB_URI
+          type: SECRET
+        - key: DO_MODEL_ACCESS_KEY
+          type: SECRET
+        - key: DO_INFERENCE_BASE_URL
+          value: https://inference.do-ai.run/v1
+        - key: CHAT_MODEL
+          type: SECRET
+        - key: EXTRACTION_MODEL
+          type: SECRET
+        - key: TAVILY_API_KEY
+          type: SECRET
