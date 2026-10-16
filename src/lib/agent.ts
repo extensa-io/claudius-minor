@@ -1,7 +1,7 @@
 import { HumanMessage, SystemMessage } from "@langchain/core/messages";
 import { dispatchCustomEvent } from "@langchain/core/callbacks/dispatch";
 import { tool } from "@langchain/core/tools";
-import { Annotation, END, MemorySaver, MessagesAnnotation, START, StateGraph } from "@langchain/langgraph";
+import { Annotation, END, MessagesAnnotation, START, StateGraph } from "@langchain/langgraph";
 import { ToolNode, toolsCondition } from "@langchain/langgraph/prebuilt";
 import { ChatOpenAI } from "@langchain/openai";
 import { z } from "zod";
@@ -10,6 +10,7 @@ import { webSearch } from "@/lib/search";
 import { SYSTEM_PROMPT, memoryNote } from "@/lib/prompt";
 import { assembleMemoryBlock, type RetrievedMemory } from "@/lib/memory";
 import { ObjectId } from "mongodb";
+import { getCheckpointer } from "@/lib/checkpointer";
 
 const webSearchTool = tool(async ({ query }) => JSON.stringify(await webSearch(query)), {
   name: "web_search", description: "Search the web for current information", schema: z.object({ query: z.string() }),
@@ -59,7 +60,7 @@ const builder = new StateGraph(State)
 
 let graphPromise: Promise<ReturnType<typeof builder.compile>> | undefined;
 export async function getChatGraph() {
-  graphPromise ??= Promise.resolve(builder.compile({ checkpointer: new MemorySaver() }));
+  graphPromise ??= getCheckpointer().then((checkpointer) => builder.compile({ checkpointer }));
   return graphPromise;
 }
 
