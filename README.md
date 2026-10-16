@@ -30,7 +30,7 @@ flowchart LR
 ## Run locally
 
 1. Install packages with `pnpm install`.
-2. Copy `.env.example` to `.env`, add credentials, and verify the model IDs with `pnpm spike:do-model-list`.
+2. Copy `.env.example` to `.env`, add credentials, run `pnpm spike:do-model-list`, then set `CHAT_MODEL` and `EXTRACTION_MODEL` to the exact IDs returned by the endpoint.
 3. Allow Atlas network access from your development machine.
 4. Create collections, indexes, vector index, and personas with `pnpm db:setup`.
 5. Start the app with `pnpm dev` and open `http://localhost:3000`.

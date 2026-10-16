@@ -4,8 +4,8 @@ const EnvSchema = z.object({
   MONGODB_URI: z.string().url().optional(),
   DO_MODEL_ACCESS_KEY: z.string().startsWith("sk-do-").optional(),
   DO_INFERENCE_BASE_URL: z.string().url().default("https://inference.do-ai.run/v1"),
-  CHAT_MODEL: z.string().min(1).default("openai-gpt-oss-120b"),
-  EXTRACTION_MODEL: z.string().min(1).default("openai-gpt-oss-20b"),
+  CHAT_MODEL: z.string().min(1).optional(),
+  EXTRACTION_MODEL: z.string().min(1).optional(),
   TAVILY_API_KEY: z.string().min(1).optional(),
 });
 
