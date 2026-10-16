@@ -8,10 +8,10 @@ export const SUPERSEDE_THRESHOLD = 0.88;
 export interface MemoryHit { _id: ObjectId; content: string; category: MemoryCategory; score: number }
 export type MemoryAction = { action: "skip" } | { action: "supersede"; previous: MemoryHit } | { action: "insert" };
 
-export function decideMemoryAction(candidate: Candidate, hits: MemoryHit[]): MemoryAction {
-  const nearest = hits.filter((hit) => hit.category === candidate.category).sort((left, right) => right.score - left.score)[0];
-  if (!nearest || nearest.score < SUPERSEDE_THRESHOLD) return { action: "insert" };
-  if (nearest.score >= DUPLICATE_THRESHOLD && normalize(nearest.content) === normalize(candidate.content)) return { action: "skip" };
+export function decideMemoryAction(candidate: Candidate, hits: MemoryHit[], thresholds = { duplicate: DUPLICATE_THRESHOLD, supersede: SUPERSEDE_THRESHOLD }): MemoryAction {
+  const nearest = hits.filter((hit) => hit.category === candidate.category).sort((a, b) => b.score - a.score)[0];
+  if (!nearest || nearest.score < thresholds.supersede) return { action: "insert" };
+  if (nearest.score >= thresholds.duplicate && normalize(nearest.content) === normalize(candidate.content)) return { action: "skip" };
   return { action: "supersede", previous: nearest };
 }
 
