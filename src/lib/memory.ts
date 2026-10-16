@@ -8,9 +8,15 @@ export const SUPERSEDE_THRESHOLD = 0.88;
 export interface MemoryHit { _id: ObjectId; content: string; category: MemoryCategory; score: number }
 export type MemoryAction = { action: "skip" } | { action: "supersede"; previous: MemoryHit } | { action: "insert" };
 
-export function decideMemoryAction(_candidate: Candidate, _hits: MemoryHit[]): MemoryAction {
-  // TODO(step-4)
-  return { action: "insert" };
+export function decideMemoryAction(candidate: Candidate, hits: MemoryHit[]): MemoryAction {
+  const nearest = hits.filter((hit) => hit.category === candidate.category).sort((left, right) => right.score - left.score)[0];
+  if (!nearest || nearest.score < SUPERSEDE_THRESHOLD) return { action: "insert" };
+  if (nearest.score >= DUPLICATE_THRESHOLD && normalize(nearest.content) === normalize(candidate.content)) return { action: "skip" };
+  return { action: "supersede", previous: nearest };
+}
+
+function normalize(text: string): string {
+  return text.toLowerCase().replace(/[^\p{L}\p{N}\s]/gu, "").replace(/\s+/g, " ").trim();
 }
 
 export function filterExtractionMessages(messages: Array<{ type: string; content: unknown }>, watermark: number): string {
