@@ -37,7 +37,7 @@ export default function Home() {
       setUserId(data.currentUserId ?? "");
       if (data.currentUserId) window.setTimeout(() => void refresh(), 0);
     });
-  }, []);
+  }, [refresh]);
   useEffect(() => {
     if (status === "ready" && messages.length > 0) window.setTimeout(() => void refresh(), 500);
   }, [status, messages, refresh]);
