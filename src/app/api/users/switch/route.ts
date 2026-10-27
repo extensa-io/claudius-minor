@@ -1,9 +1,12 @@
+import { accessError } from "@/lib/access";
 import { cookies } from "next/headers";
 import { ObjectId } from "mongodb";
 import { collections } from "@/lib/db";
 import { USER_COOKIE } from "@/lib/user";
 
 export async function POST(request: Request) {
+  const denied = accessError(request);
+  if (denied) return denied;
   const body: unknown = await request.json();
   if (typeof body !== "object" || body === null || !("userId" in body) || typeof body.userId !== "string" || !ObjectId.isValid(body.userId)) return Response.json({ error: "Choose a valid persona." }, { status: 400 });
   const user = await (await collections.users()).findOne({ _id: new ObjectId(body.userId) });

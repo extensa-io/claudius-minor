@@ -1,9 +1,12 @@
+import { accessError } from "@/lib/access";
 import { cookies } from "next/headers";
 import { databaseErrorResponse } from "@/lib/database-error";
 import { collections } from "@/lib/db";
 import { USER_COOKIE } from "@/lib/user";
 
-export async function GET() {
+export async function GET(request: Request) {
+  const denied = accessError(request);
+  if (denied) return denied;
   try {
     const users = await collections.users();
     const personas = await users.find().sort({ name: 1 }).toArray();

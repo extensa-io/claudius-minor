@@ -1,9 +1,12 @@
+import { accessError } from "@/lib/access";
 import { ObjectId } from "mongodb";
 import { resolveCurrentUser } from "@/lib/user";
 import { collections } from "@/lib/db";
 import { getChatGraph } from "@/lib/agent";
 
-export async function GET(_request: Request, context: { params: Promise<{ id: string }> }) {
+export async function GET(request: Request, context: { params: Promise<{ id: string }> }) {
+  const denied = accessError(request);
+  if (denied) return denied;
   try {
     const user = await resolveCurrentUser();
     const { id } = await context.params;

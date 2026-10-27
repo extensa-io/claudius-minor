@@ -41,6 +41,16 @@ Use the persona switcher to choose Angela, Betty, or Caroline. The cookie is an 
 
 DigitalOcean App Platform accepts the spec in `.do/app.yaml` or the Deploy to DigitalOcean template in `.do/deploy.template.yaml`. Add the environment values as app secrets. Atlas network access must allow `0.0.0.0/0` for App Platform. That broad access is a deployment limitation, not recommended for a production release.
 
+## Presenter access
+
+Set `APP_ACCESS_CODE` as a runtime **SECRET** on the `web` service before deploying. Generate a high-entropy code with `openssl rand -hex 24`. Production rejects all API requests when the code is missing or shorter than 16 characters. Local development permits access without a configured code.
+
+Enter the code on the homepage to open the demo. The browser keeps it only in React memory and sends it in the `x-access-code` header on every API request, including streaming chat. It never stores the code in a cookie, URL, local storage, or session storage. Reloading the page or clicking **Lock demo** requires entering it again. The existing persona cookie still selects Angela, Betty, or Caroline; it does not grant API access.
+
+Keep the code private and enter it off-screen before presenting. Anyone who knows it can use the shared personas and consume inference and search credits. This gate does not provide rate limits or a spending cap. Rotate the deployment secret and redeploy if it leaks. In-flight requests can still finish after locking or rotating the code.
+
+For scripted API checks, include `x-access-code` in each request. Do not commit a populated code or use a `NEXT_PUBLIC_` variable.
+
 ## Livestream guide
 
 See [LIVESTREAM-GUIDE.md](.assets/LIVESTREAM-GUIDE.md) for the detailed one-hour runbook, presenter script, setup and rehearsal steps, demo prompts, recovery plan, and tag preflight. Complete its service checks and rehearsal before presenting the repaired livestream tags.

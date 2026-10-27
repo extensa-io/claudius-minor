@@ -1,3 +1,4 @@
+import { accessError } from "@/lib/access";
 import { HumanMessage } from "@langchain/core/messages";
 import { createUIMessageStream, createUIMessageStreamResponse } from "ai";
 import { ObjectId } from "mongodb";
@@ -13,6 +14,8 @@ import { bridgeEvents } from "@/lib/stream";
 export const runtime = "nodejs";
 
 export async function POST(request: Request) {
+  const denied = accessError(request);
+  if (denied) return denied;
   try {
     const user = await resolveCurrentUser();
     const parsed = ChatInputSchema.safeParse(await request.json());

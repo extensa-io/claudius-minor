@@ -13,6 +13,9 @@ spec:
       instance_size_slug: basic-xxs
       http_port: 3000
       envs:
+        - key: APP_ACCESS_CODE
+          scope: RUN_TIME
+          type: SECRET
         - key: MONGODB_URI
           type: SECRET
         - key: DO_MODEL_ACCESS_KEY

@@ -1,8 +1,11 @@
+import { accessError } from "@/lib/access";
 import { ObjectId } from "mongodb";
 import { resolveCurrentUser } from "@/lib/user";
 import { collections } from "@/lib/db";
 
-export async function DELETE(_request: Request, context: { params: Promise<{ id: string }> }) {
+export async function DELETE(request: Request, context: { params: Promise<{ id: string }> }) {
+  const denied = accessError(request);
+  if (denied) return denied;
   try {
     const user = await resolveCurrentUser();
     const { id } = await context.params;
