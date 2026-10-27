@@ -3,7 +3,7 @@ import { describe, it, expect } from "vitest";
 import { env } from "@/lib/env";
 import { collections, getClient, getDb } from "@/lib/db";
 import { persistCandidate } from "@/lib/persistence";
-import { ensureVectorIndex } from "../scripts/spikes/atlas-common";
+import { ensureVectorIndex } from "../../scripts/spikes/atlas-common";
 
 const enabled = env.MONGODB_URI && env.DO_MODEL_ACCESS_KEY && env.EXTRACTION_MODEL;
 describe.skipIf(!enabled)("memory persistence flow", () => {

@@ -2,7 +2,7 @@ import { MongoClient, ObjectId } from "mongodb";
 import { describe, expect, it } from "vitest";
 import { DATABASE_NAME } from "@/lib/db";
 import { env, requiredEnv } from "@/lib/env";
-import { ensureVectorIndex, vectorQuery, waitForDocument } from "../scripts/spikes/atlas-common";
+import { ensureVectorIndex, vectorQuery, waitForDocument } from "../../scripts/spikes/atlas-common";
 
 // Keep a single reusable test index; only remove this run's documents.
 describe.skipIf(!env.MONGODB_URI)("Atlas vector integration", () => {
