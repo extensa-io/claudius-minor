@@ -3,7 +3,9 @@
   "version": "0.1.0",
   "private": true,
   "packageManager": "pnpm@12.14.0",
-  "engines": { "node": ">=22.0.0" },
+  "engines": {
+    "node": ">=22.0.0"
+  },
   "scripts": {
     "dev": "next dev",
     "build": "next build",
@@ -23,20 +25,22 @@
     "spike:atlas-calibration": "node --env-file-if-exists=.env node_modules/tsx/dist/cli.mjs scripts/spikes/atlas-calibration.ts"
   },
   "dependencies": {
+    "@ai-sdk/react": "^3.0.0",
     "@langchain/community": "^1.1.0",
     "@langchain/core": "^1.1.0",
     "@langchain/langgraph": "^1.4.4",
     "@langchain/langgraph-checkpoint-mongodb": "^1.0.0",
     "@langchain/openai": "^1.0.0",
     "@tavily/core": "^0.5.0",
-    "@ai-sdk/react": "^3.0.0",
     "ai": "^6.0.0",
     "langchain": "^1.1.0",
-    "mongodb": "^6.21.0", 
+    "mongodb": "^6.21.0",
     "next": "16.4.1",
     "openai": "^5.0.0",
     "react": "19.3.0",
     "react-dom": "19.3.0",
+    "react-markdown": "^10.1.0",
+    "remark-gfm": "^4.0.1",
     "zod": "^4.0.0"
   },
   "devDependencies": {

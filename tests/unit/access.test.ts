@@ -32,6 +32,7 @@ describe("presenter access", () => {
       (await import("@/app/api/users/route")).GET,
       (await import("@/app/api/users/switch/route")).POST,
       (await import("@/app/api/chat/route")).POST,
+      (await import("@/app/api/reset/route")).POST,
       (await import("@/app/api/conversations/route")).GET,
       (await import("@/app/api/conversations/[id]/route")).GET,
       (await import("@/app/api/memories/route")).GET,

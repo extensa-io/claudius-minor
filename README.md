@@ -47,6 +47,8 @@ Set `APP_ACCESS_CODE` as a runtime **SECRET** on the `web` service before deploy
 
 Enter the code on the homepage to open the demo. The browser keeps it only in React memory and sends it in the `x-access-code` header on every API request, including streaming chat. It never stores the code in a cookie, URL, local storage, or session storage. Reloading the page or clicking **Lock demo** requires entering it again. The existing persona cookie still selects Angela, Betty, or Caroline; it does not grant API access.
 
+Use **Reset persona** to delete every conversation, checkpoint transcript, and memory for the selected persona. Type `RESET` in the confirmation dialog. Other personas stay untouched; reset each one separately for a clean demo. Wait for chat and background extraction to finish before resetting. The reset is irreversible and does not cancel work already running in another tab.
+
 Keep the code private and enter it off-screen before presenting. Anyone who knows it can use the shared personas and consume inference and search credits. This gate does not provide rate limits or a spending cap. Rotate the deployment secret and redeploy if it leaks. In-flight requests can still finish after locking or rotating the code.
 
 For scripted API checks, include `x-access-code` in each request. Do not commit a populated code or use a `NEXT_PUBLIC_` variable.
