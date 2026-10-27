@@ -1,0 +1,18 @@
+<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 64 64" role="img" aria-label="Claudius">
+  <!--
+    Claudius mark: a Superman-style shield in the brand aubergine with a cream
+    "C" inside. The C is built from a cream disc, an aubergine disc that hollows
+    it into a ring, and an aubergine notch that opens the ring on the right — no
+    font dependency, so it renders identically as a 16px favicon.
+  -->
+  <path
+    d="M15 14 Q32 16 49 14 Q58 20 58 29 Q52 46 32 60 Q12 46 6 29 Q6 20 15 14 Z"
+    fill="#8e3179"
+    stroke="#f4eee3"
+    stroke-width="2.5"
+    stroke-linejoin="round"
+  />
+  <circle cx="32" cy="31" r="11.5" fill="#f4eee3" />
+  <circle cx="32" cy="31" r="5" fill="#8e3179" />
+  <rect x="32" y="26" width="16" height="10" fill="#8e3179" />
+</svg>
