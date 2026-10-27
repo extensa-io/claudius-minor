@@ -2,17 +2,19 @@ import { ObjectId } from "mongodb";
 import { ExtractionOutputSchema, type Candidate, type MemoryCategory } from "@/lib/schemas";
 
 export const CONFIDENCE_THRESHOLD = 0.6;
-export const DUPLICATE_THRESHOLD = 0.94;
-export const SUPERSEDE_THRESHOLD = 0.88;
 
 export interface MemoryHit { _id: ObjectId; content: string; category: MemoryCategory; score: number }
 export type MemoryAction = { action: "skip" } | { action: "supersede"; previous: MemoryHit } | { action: "insert" };
 
-export function decideMemoryAction(candidate: Candidate, hits: MemoryHit[], thresholds = { duplicate: DUPLICATE_THRESHOLD, supersede: SUPERSEDE_THRESHOLD }): MemoryAction {
-  const nearest = hits.filter((hit) => hit.category === candidate.category).sort((a, b) => b.score - a.score)[0];
-  if (!nearest || nearest.score < thresholds.supersede) return { action: "insert" };
-  if (nearest.score >= thresholds.duplicate && normalize(nearest.content) === normalize(candidate.content)) return { action: "skip" };
-  return { action: "supersede", previous: nearest };
+export type MemoryRelation = { previousId: string; relation: "duplicate" | "replacement" | "compatible" };
+
+export function decideMemoryAction(candidate: Candidate, hits: MemoryHit[], relation?: MemoryRelation): MemoryAction {
+  const sameCategory = hits.filter((hit) => hit.category === candidate.category);
+  if (sameCategory.some((hit) => normalize(hit.content) === normalize(candidate.content))) return { action: "skip" };
+  const previous = sameCategory.find((hit) => hit._id.toString() === relation?.previousId);
+  if (previous && relation?.relation === "duplicate") return { action: "skip" };
+  if (previous && relation?.relation === "replacement") return { action: "supersede", previous };
+  return { action: "insert" };
 }
 
 function normalize(text: string): string {

@@ -7,10 +7,7 @@ import { ChatInputSchema } from "@/lib/schemas";
 import { resolveCurrentUser } from "@/lib/user";
 import { extractUserText, parseCandidates } from "@/lib/memory";
 import { persistCandidate } from "@/lib/persistence";
-import { requiredEnv, env } from "@/lib/env";
-import { ChatOpenAI } from "@langchain/openai";
-import { SystemMessage } from "@langchain/core/messages";
-import { ExtractionOutputSchema } from "@/lib/schemas";
+import { extractMemories } from "@/lib/extraction";
 import { bridgeEvents } from "@/lib/stream";
 
 export const runtime = "nodejs";
@@ -27,7 +24,7 @@ export async function POST(request: Request) {
     if (!conversation) {
       const now = new Date();
       const inserted = await conversations.insertOne({ userId: user._id, title: message.slice(0, 80), createdAt: now, updatedAt: now, extractionWatermark: 0 });
-      conversation = await conversations.findOne({ _id: inserted.insertedId });
+      conversation = await conversations.findOne({ _id: inserted.insertedId, userId: user._id });
     }
     if (!conversation) throw new Error("Could not create conversation.");
     const threadId = conversation._id.toString();
@@ -48,9 +45,7 @@ export async function POST(request: Request) {
             await conversations.updateOne({ _id: conversation._id, userId: user._id }, { $set: { extractionWatermark: watermark } });
             return;
           }
-          const model = new ChatOpenAI({ model: requiredEnv("EXTRACTION_MODEL"), apiKey: requiredEnv("DO_MODEL_ACCESS_KEY"), configuration: { baseURL: env.DO_INFERENCE_BASE_URL }, temperature: 0 });
-          const extractor = model.withStructuredOutput(ExtractionOutputSchema, { method: "jsonSchema" });
-          const result = await extractor.invoke([new SystemMessage("Extract durable facts, preferences, and context about the user. Exclude small talk and assistant content. Return only useful memories. Use confidence 0 to 1 and importance 0 to 1."), new HumanMessage(text)]);
+          const result = await extractMemories(text);
           const candidates = parseCandidates(result);
           for (const candidate of candidates) await persistCandidate(candidate, user._id, conversation._id);
           await conversations.updateOne({ _id: conversation._id, userId: user._id }, { $set: { extractionWatermark: watermark } });

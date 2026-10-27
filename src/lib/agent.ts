@@ -43,7 +43,10 @@ async function loadContext(state: typeof State.State, config: { configurable?: R
 }
 
 async function agent(state: typeof State.State) {
-  const model = new ChatOpenAI({ model: requiredEnv("CHAT_MODEL"), apiKey: requiredEnv("DO_MODEL_ACCESS_KEY"), configuration: { baseURL: env.DO_INFERENCE_BASE_URL }, temperature: 0 }).bindTools(tools);
+  const lastHuman = state.messages.findLastIndex((message) => message.getType() === "human");
+  const toolTurns = state.messages.slice(lastHuman + 1).filter((message) => message.getType() === "tool").length;
+  // Bound repeated searches and still produce a final answer from completed results.
+  const model = new ChatOpenAI({ model: requiredEnv("CHAT_MODEL"), apiKey: requiredEnv("DO_MODEL_ACCESS_KEY"), configuration: { baseURL: env.DO_INFERENCE_BASE_URL }, temperature: 0, streaming: true }).bindTools(tools, { tool_choice: toolTurns >= 4 ? "none" : "auto" });
   const system = [SYSTEM_PROMPT.replace("{{date}}", new Date().toISOString().slice(0, 10)), state.memoryContext].filter(Boolean).join("\n\n");
   const response = await model.invoke([new SystemMessage(system), ...state.messages]);
   return { messages: [response] };

@@ -2,7 +2,7 @@
 
 Claudius Minor is a small chat agent with an open-weight model, durable conversations, web search, and long-term personal memory. MongoDB Atlas stores the whole backend, including agent checkpoints and memories. Atlas Automated Embedding powers semantic memory search with Voyage `voyage-4` without adding embedding code or an embedding SDK to the app.
 
-The core idea is simple: MongoDB can be your agent's entire backend, from vector store to memory management system.
+The core idea is this: MongoDB as your agent's entire backend, from vector store to memory management system.
 
 ## Architecture
 
@@ -39,11 +39,13 @@ Use the persona switcher to choose Angela, Betty, or Caroline. The cookie is an 
 
 ## Deploy
 
-DigitalOcean App Platform accepts the spec in `.do/app.yaml` or the Deploy to DigitalOcean template in `.do/deploy.template.yaml`. Add the environment values as app secrets. Atlas network access must allow `0.0.0.0/0` for App Platform. That broad access is a deployment limitation, not an ideal production security posture.
+DigitalOcean App Platform accepts the spec in `.do/app.yaml` or the Deploy to DigitalOcean template in `.do/deploy.template.yaml`. Add the environment values as app secrets. Atlas network access must allow `0.0.0.0/0` for App Platform. That broad access is a deployment limitation, not recommended for a production release.
 
-## Livestream tags
+## Livestream guide
 
-The `livestream` branch presents a linear path through `start`, `step-1`, `step-2`, `step-3`, `step-4`, and `final`. The prepared `start` state demonstrates chat and search, then the live steps add durable checkpointing, memory writes, recall, and contradiction handling.
+See [LIVESTREAM-GUIDE.md](.assets/LIVESTREAM-GUIDE.md) for the detailed one-hour runbook, presenter script, setup and rehearsal steps, demo prompts, recovery plan, and tag preflight. Complete its service checks and rehearsal before presenting the repaired livestream tags.
+
+The `livestream` branch follows `start`, `step-1`, `step-2`, `step-3`, `step-4`, and `final` for chat and search, durable checkpointing, memory writes, recall, and contradiction handling. The `final` file tree matches `main`.
 
 ## Known limitations
 
@@ -51,7 +53,7 @@ The `livestream` branch presents a linear path through `start`, `step-1`, `step-
 - Two similar memories extracted in the same batch cannot find one another through vector search before the index processes them.
 - The cookie persona switcher demonstrates isolation but does not provide authentication.
 - DigitalOcean App Platform needs Atlas network access `0.0.0.0/0` in this setup.
-- The score thresholds require live calibration against the target Atlas cluster and model.
+- Semantic similarity selects related memories; a structured model comparison decides whether facts duplicate, replace, or coexist. This adds inference cost to memory writes.
 
 ## Claudius article series
 

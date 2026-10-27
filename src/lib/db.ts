@@ -1,6 +1,8 @@
 import { MongoClient, ObjectId } from "mongodb";
 import { env } from "@/lib/env";
 
+export const DATABASE_NAME = "claudius-minor-app";
+
 const globalDb = globalThis as typeof globalThis & { mongoClient?: Promise<MongoClient> };
 
 export async function getClient(): Promise<MongoClient> {
@@ -10,7 +12,7 @@ export async function getClient(): Promise<MongoClient> {
 }
 
 export async function getDb() {
-  return (await getClient()).db("claudius_minor");
+  return (await getClient()).db(DATABASE_NAME);
 }
 
 export const collections = {

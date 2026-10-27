@@ -1,6 +1,7 @@
 import { ObjectId } from "mongodb";
 import { collections } from "@/lib/db";
 import type { Candidate } from "@/lib/schemas";
+import { classifyMemoryRelation } from "@/lib/memory-relation";
 import { decideMemoryAction, type MemoryHit } from "@/lib/memory";
 
 export async function persistCandidate(candidate: Candidate, userId: ObjectId, conversationId: ObjectId): Promise<void> {
@@ -9,7 +10,7 @@ export async function persistCandidate(candidate: Candidate, userId: ObjectId, c
     { $vectorSearch: {
       index: "memories_vector",
       path: "content",
-      query: { text: candidate.content, model: "voyage-4" },
+      query: { text: candidate.content },
       numCandidates: 100,
       limit: 10,
       filter: { userId: { $eq: userId }, status: { $eq: "active" } },
@@ -17,7 +18,13 @@ export async function persistCandidate(candidate: Candidate, userId: ObjectId, c
     { $addFields: { score: { $meta: "vectorSearchScore" } } },
     { $project: { _id: 1, content: 1, category: 1, score: 1 } },
   ]).toArray();
-  const decision = decideMemoryAction(candidate, neighbors);
+  // Include unindexed recent writes so one extraction batch can deduplicate itself.
+  const recent = await memories.find({ userId, status: "active", category: candidate.category }).sort({ createdAt: -1 }).limit(20).toArray();
+  const hits = [...neighbors];
+  for (const memory of recent) if (!hits.some((hit) => hit._id.equals(memory._id))) hits.push({ ...memory, score: 0 });
+  const exact = decideMemoryAction(candidate, hits);
+  if (exact.action === "skip") return;
+  const decision = decideMemoryAction(candidate, hits, await classifyMemoryRelation(candidate, hits));
   if (decision.action === "skip") return;
 
   const inserted = await memories.insertOne({

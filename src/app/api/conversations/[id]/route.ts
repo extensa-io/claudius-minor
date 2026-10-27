@@ -13,6 +13,6 @@ export async function GET(_request: Request, context: { params: Promise<{ id: st
     const graph = await getChatGraph();
     const state = await graph.getState({ configurable: { thread_id: id } });
     const messages = (state.values.messages ?? []) as Array<{ getType(): string; text: string }>;
-    return Response.json({ messages: messages.map((message) => ({ role: message.getType() === "human" ? "user" : "assistant", content: message.text })) });
+    return Response.json({ messages: messages.filter((message) => message.getType() === "human" || message.getType() === "ai").filter((message) => message.text.length > 0).map((message) => ({ role: message.getType() === "human" ? "user" : "assistant", content: message.text })) });
   } catch { return Response.json({ error: "Conversation not found." }, { status: 404 }); }
 }

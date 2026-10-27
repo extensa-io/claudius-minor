@@ -7,31 +7,44 @@ import { ObjectId } from "mongodb";
 import { z } from "zod";
 import { afterAll, describe, expect, it } from "vitest";
 import { env, requiredEnv } from "@/lib/env";
-import { getClient } from "@/lib/db";
+import { DATABASE_NAME, getClient } from "@/lib/db";
 import { webSearch } from "@/lib/search";
+import { extractMemories } from "@/lib/extraction";
 
 const doReady = Boolean(env.DO_MODEL_ACCESS_KEY && env.CHAT_MODEL && env.EXTRACTION_MODEL);
 const mongoReady = Boolean(env.MONGODB_URI);
 const tavilyReady = Boolean(env.TAVILY_API_KEY);
-const model = () => new ChatOpenAI({ model: requiredEnv("CHAT_MODEL"), apiKey: requiredEnv("DO_MODEL_ACCESS_KEY"), configuration: { baseURL: env.DO_INFERENCE_BASE_URL }, temperature: 0 });
+const model = () => new ChatOpenAI({ model: requiredEnv("CHAT_MODEL"), apiKey: requiredEnv("DO_MODEL_ACCESS_KEY"), configuration: { baseURL: env.DO_INFERENCE_BASE_URL }, temperature: 0, streaming: true });
 
 describe.skipIf(!doReady)("DigitalOcean inference integration", () => {
   it("returns extraction output through structured output", async () => {
-    const schema = z.object({ memories: z.array(z.object({ content: z.string(), category: z.enum(["fact", "preference", "context"]), confidence: z.number(), importance: z.number() })) });
-    const extractor = new ChatOpenAI({ model: requiredEnv("EXTRACTION_MODEL"), apiKey: requiredEnv("DO_MODEL_ACCESS_KEY"), configuration: { baseURL: env.DO_INFERENCE_BASE_URL }, temperature: 0 }).withStructuredOutput(schema, { method: "jsonSchema" });
-    const result = await extractor.invoke("Remember that I prefer TypeScript. Return one preference memory.");
+    const result = await extractMemories("Human: Remember that I prefer TypeScript.");
     expect(result.memories.length).toBeGreaterThan(0);
   }, 60_000);
 
   it("calls a tool and handles its result on the next turn", async () => {
-    const lookup = tool(async ({ query }) => `Found current information about ${query}.`, { name: "web_search", description: "Search for current information", schema: z.object({ query: z.string() }) });
-    const response = await model().bindTools([lookup]).invoke("Use web_search to find MongoDB Atlas.");
+    const lookup = tool(async () => "MongoDB Atlas is MongoDB's managed cloud database service. Official documentation: https://www.mongodb.com/docs/atlas/",  { name: "web_search", description: "Search for current information", schema: z.object({ query: z.string() }) });
+    const question = "Use web_search once to find MongoDB Atlas and explain the result in one sentence.";
+    const response = await model().bindTools([lookup]).invoke(question);
     const call = response.tool_calls?.[0];
     expect(call?.name).toBe("web_search");
     if (!call) return;
     const result = await lookup.invoke(call.args as { query: string });
-    const followup = await model().invoke([new HumanMessage("Use web_search to find MongoDB Atlas."), response, new ToolMessage({ tool_call_id: call.id ?? "call-1", content: result })]);
+    const history = [new HumanMessage(question), response, new ToolMessage({ tool_call_id: call.id!, content: result })];
+    let followup = await model().bindTools([lookup]).invoke(history);
+    // Additional tool calls are valid; run the same loop as the app graph.
+    for (let turn = 0; followup.tool_calls?.length && turn < 4; turn += 1) {
+      history.push(followup);
+      for (const next of followup.tool_calls) history.push(new ToolMessage({ tool_call_id: next.id!, content: await lookup.invoke(next.args as { query: string }) }));
+      followup = await model().bindTools([lookup]).invoke(history);
+    }
+    if (followup.tool_calls?.length) {
+      history.push(followup);
+      for (const next of followup.tool_calls) history.push(new ToolMessage({ tool_call_id: next.id!, content: await lookup.invoke(next.args as { query: string }) }));
+      followup = await model().bindTools([lookup], { tool_choice: "none" }).invoke(history);
+    }
     expect(followup.text.length).toBeGreaterThan(0);
+    expect(followup.text).toMatch(/MongoDB|Atlas/i);
   }, 60_000);
 });
 
@@ -46,7 +59,7 @@ describe.skipIf(!tavilyReady)("Tavily integration", () => {
 describe.skipIf(!mongoReady)("MongoDBSaver integration", () => {
   it("round-trips a thread using two graph instances", async () => {
     const client = await getClient();
-    const checkpointer = new MongoDBSaver({ client, dbName: "claudius_minor" });
+    const checkpointer = new MongoDBSaver({ client, dbName: DATABASE_NAME });
     const State = Annotation.Root({ value: Annotation<string>({ reducer: (_previous, next) => next, default: () => "" }) });
     const builder = new StateGraph(State).addNode("save", async (state) => ({ value: state.value })).addEdge(START, "save").addEdge("save", END);
     const threadId = `integration-${new ObjectId().toString()}`;
