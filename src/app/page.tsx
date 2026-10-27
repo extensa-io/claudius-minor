@@ -7,7 +7,7 @@ import { MessageMarkdown } from "@/app/components/message-markdown";
 
 const REPO_URL = "https://github.com/extensa-io/claudius-minor";
 const siteTitle = <a href={REPO_URL} target="_blank" rel="noopener noreferrer">Claudius Minor</a>;
-const siteFooter = <footer className="site-footer">Built by Néstor Daza · <a href="https://www.extensa.io" target="_blank" rel="noopener noreferrer">www.extensa.io</a></footer>;
+const siteFooter = <footer className="site-footer">Built by Néstor Daza · <a href="https://www.extensa.io" target="_blank" rel="noopener noreferrer">www.extensa.io</a> · <a href={REPO_URL} target="_blank" rel="noopener noreferrer">GitHub repo</a></footer>;
 
 type Persona = { id: string; name: string };
 type Conversation = { id: string; title: string };
