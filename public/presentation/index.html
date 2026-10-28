@@ -189,7 +189,7 @@ builder.compile({ checkpointer });</code></pre><p>Restart the app.<br>Restore th
 New: I live in Montréal
   status: active
   supersedes → old record</code></pre></div>
-  <aside class="notes">Step 4 manages memory with insert, skip, and supersede actions. New facts are inserted, duplicates can be skipped, and changed facts can replace earlier active records while preserving supersedes and supersededBy lineage. The historical step-4 checkpoint uses a category/similarity heuristic. Current main adds recent-write checks and a structured LLM relation comparison so related but distinct facts can coexist. Similarity alone does not establish contradiction. The current two-document lineage update is not atomic. Relevant files: src/lib/memory.ts and src/lib/persistence.ts.</aside>
+  <aside class="notes">Step 4 manages memory with insert, skip, and supersede actions. New facts are inserted, duplicates can be skipped, and changed facts can replace earlier active records while preserving supersedes and supersededBy lineage. Step 4 uses semantic neighbors, recent-write checks, and a structured LLM relation comparison so related but distinct facts can coexist. The completed checkpoint matches the reference app implementation. Similarity alone does not establish contradiction. The current two-document lineage update is not atomic. Relevant files: src/lib/memory.ts and src/lib/persistence.ts.</aside>
 </section>
 
 <section class="light columns three" data-template="32" data-background-color="#fdfff5">

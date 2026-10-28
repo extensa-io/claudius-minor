@@ -87,13 +87,13 @@ To serve just the deck without Next.js, run `python3 -m http.server 3101 --direc
 
 To export a PDF, open `/presentation/index.html?print-pdf` in Chromium and print to PDF with background graphics enabled and no margins. Speaker notes and presenter controls are excluded.
 
-See [PRESENTATION-GUIDE.md](.assets/PRESENTATION-GUIDE.md) for StreamYard setup, offline presenting, PDF export, the 58-minute schedule, and badge concept coverage.
+See [PRESENTATION-GUIDE.md](.assets/PRESENTATION-GUIDE.md) for deck maintenance, offline serving, PDF export, visual conventions, and badge concept coverage.
 
 ## Livestream guide
 
-See [LIVESTREAM-GUIDE.md](.assets/LIVESTREAM-GUIDE.md) for the detailed one-hour runbook, presenter script, setup and rehearsal steps, demo prompts, recovery plan, and tag preflight. Complete its service checks and rehearsal before presenting the repaired livestream tags.
+See [LIVESTREAM-GUIDE.md](.assets/LIVESTREAM-GUIDE.md) for the event runbook: isolated local setup, service preflight, prepared checkpoint commands, demos, timing, and recovery. The walkthrough shows a diff, loads the next tag, and demonstrates its behavior; it requires no live typing or deployment between steps.
 
-The `livestream` branch follows `start`, `step-1`, `step-2`, `step-3`, `step-4`, and `final` for chat and search, durable checkpointing, memory writes, recall, and contradiction handling. The `final` file tree matches `main`.
+The rebuilt tags `start`, `step-1`, `step-2`, `step-3`, `step-4`, and `final` retain the completed app's UI, scripts, credential validation, and safeguards. Each step restores one lesson capability. `step-4` and `final` match the reference `main` file tree.
 
 ## Known limitations
 

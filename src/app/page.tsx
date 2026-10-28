@@ -36,7 +36,7 @@ export default function Home() {
       setChecking(false);
     }
   }
-  if (accessCode === undefined) return <main className="access-screen"><form className="access-form" onSubmit={(event) => { event.preventDefault(); void unlock(); }}><h1>{siteTitle}</h1><p>This demo requires a presenter access code.</p><label htmlFor="access-code">Access code</label><input id="access-code" type="password" autoComplete="off" required value={code} onChange={(event) => setCode(event.target.value)} /><button disabled={checking || !code}>{checking ? "Checking..." : "Open demo"}</button>{error && <p role="alert">{error}</p>}{siteFooter}</form></main>;
+  if (accessCode === undefined) return <main className="access-screen"><form className="access-form" onSubmit={(event) => { event.preventDefault(); void unlock(); }}><h1>{siteTitle}</h1><label htmlFor="access-code">Access code</label><input id="access-code" type="password" autoComplete="off" required value={code} onChange={(event) => setCode(event.target.value)} /><button disabled={checking || !code}>{checking ? "Checking..." : "Open demo"}</button>{error && <p role="alert">{error}</p>}{siteFooter}</form></main>;
   return <ChatApp accessCode={accessCode} lock={lock} />;
 }
 

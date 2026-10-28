@@ -1,115 +1,95 @@
-# Livestream presentation
+# Presentation maintenance guide
 
-## Open and present
+This document covers the deck's controls, implementation, visual design, and learning coverage. For environment setup, checkpoint commands, event timing, and recovery, use [LIVESTREAM-GUIDE.md](LIVESTREAM-GUIDE.md).
 
-Run `pnpm dev`, then open `http://localhost:3000/slides`. This route redirects to `/presentation/index.html` so keyboard navigation and speaker notes work without iframe focus issues. The same route works on the existing DigitalOcean deployment without another service or API credentials.
+## Open and navigate
 
-Use the bottom-left arrow buttons to navigate and **Speaker notes (S)** to open the separate presenter window. Allow popups for this site. Notes intentionally do not appear on audience slides. Before sharing the audience window, click **Hide controls (P)**; press `P` to show them again.
+Open `/slides` on the local app or deployment. It redirects to `/presentation/index.html`, avoiding iframe focus issues. The hosted deck is https://claudius-minor-opf4x.ondigitalocean.app/slides.
 
-- Arrow keys or Space advance slides.
-- Home and End jump to the beginning and end.
-- `S` opens speaker notes, upcoming slide, and timer. Allow popups.
-- `F` toggles fullscreen.
-- Escape opens the overview.
-- Append `#/8` for the data model, `#/9` for the graph, `#/10` for the demo introduction, or `#/13` for the first coding checkpoint. URL hashes and visible counters both use 1-based numbering, including the title. The counter shows the slide number out of 21.
+- Arrow buttons, arrow keys, and Space navigate.
+- Home and End jump to the beginning and end; Escape opens the overview.
+- **Speaker notes (S)** opens explanatory notes, upcoming slide, and timer. Allow popups.
+- `F` toggles fullscreen; `P` toggles the visible controls.
+- URL hashes and visible counters use 1-based numbering. `#/8` opens the data model, `#/9` the graph, `#/10` the demo introduction, and `#/13` the first checkpoint.
 
-In MLH StreamYard, share only the audience slide window. Keep speaker notes and credentials on a separate, unshared window. Switch the shared surface to the app or editor for demos. Rehearse the switch with the host before going live.
+The deck contains 21 slides. Notes are public learning material, not a presenter script: keep them free of personal reminders, timing cues, rehearsal instructions, and assessment answers.
 
-Keep this deck running from the prepared repository while live coding in a separate worktree. Checking out the older livestream tags in the presentation worktree can remove `/slides` and its assets. These changes do not rewrite the existing livestream tags or move the `final` tag.
+## Standalone serving and PDF
 
-## Offline and PDF backup
+Scripts, fonts, slide images, and styles live under `public/presentation`; they do not depend on a CDN, service credentials, or the chat UI stylesheet.
 
-All presentation scripts, fonts, images, and styles live under `public/presentation`. No CDN requests or service credentials are needed to render the standalone deck. The chat app's global font stylesheet does not apply inside it.
+```bash
+python3 -m http.server 3101 --directory public/presentation
+```
 
-To present without Next.js, run `python3 -m http.server 3101 --directory public/presentation` and open `http://localhost:3101`. Avoid opening `index.html` as a `file://` URL because speaker-view browser security expects an HTTP origin.
+Open `http://localhost:3101`. Use an HTTP origin rather than `file://` for speaker-view browser security. The favicon references the app's `/icon.svg`, so it is available through the Next.js deployment, not a server restricted to the presentation folder alone.
 
-For a PDF, open `/presentation/index.html?print-pdf` directly in Chromium, wait for fonts, then print to PDF with background graphics enabled and margins set to none. The presenter controls are excluded from printing. The deck contains 21 landscape slides. Notes stay out of the audience PDF.
+For PDF export, open `/presentation/index.html?print-pdf` in Chromium, wait for fonts, then print with background graphics enabled and margins set to none. Notes and presenter controls are excluded.
 
-## Edit and maintain
+## Source files and maintenance
 
-- `public/presentation/index.html` holds 21 slides and public, attendee-friendly explanatory notes.
-- `public/presentation/theme.css` holds the template layout and typography.
-- `public/presentation/presentation.js` configures Reveal.js.
-- `src/app/slides/page.tsx` provides the public app route.
-- `tests/unit/presentation.test.ts` protects the sequence, notes, concept coverage, CTA, and asset references.
-
-The Reveal.js package is a development dependency because runtime files are vendored as static assets. After deliberately upgrading it, copy `dist/reveal.js`, `dist/reveal.css`, `dist/plugin/notes.js`, `dist/plugin/highlight.js`, and `LICENSE` into `public/presentation/vendor`, then check navigation, speaker view, and PDF export. Preserve the vendor and font licenses. Do not copy the assessment screenshots or intake contact information into public assets.
-
-## Template fidelity
-
-Reference: `.assets/2026 10 MongoDB Presentation Template.pdf`, 720 × 405 PDF points. The HTML canvas is 1080 × 607.5, a direct 1.5× scale. Layout coordinates and font specifications were extracted from the PDF.
-
-| HTML layout | Reference pages | Preserved structure |
-|---|---|---|
-| Title | 6 | Left-aligned condensed headline, eyebrow, subtitle, navy background |
-| Three columns | 31, 32, 38 | Headline at x54/y61; columns at x54, x418, x783; numbered feature hierarchy |
-| Split explanation | 29 | Text at x54/y47; complementary content on the right |
-| Graph | 100 | Left headline and medium-weight lead with diagram in the content area |
-| Coding checkpoints | 85 | Large chapter number at x54/y0 and condensed chapter heading at x54/y192 |
-| Badge CTA | 132 | Left visual/QR area; right headline at x629/y57 and supporting information |
-
-Use the same Special Gothic font family, Special Gothic Condensed One heading font, Source Code Pro code font, navy `#001E2B`, green `#00ED64`, paper `#FDFFF5`, and forest `#00684A`. Fonts come from Google Fonts with their OFL licenses. Text, code, diagram content, and line breaks necessarily replace the template's placeholders. Logos, slogans, company wordmarks, and corporate footer content are absent. Slide 2 recreates the supplied introduction's wording and right-hand text composition using native HTML text, the deck fonts, and a left-hand SVG coding/chat illustration. It includes the presenter affiliation but no company logo. It does not enlarge the low-resolution reference image.
-
-The template is not published as a slide background. This avoids accidentally retaining a logo or slogan inside a raster asset. Browser text rasterization may differ from PDF rendering. An exact pixel-for-pixel claim would be misleading for replaced content and different rendering engines.
-
-## Timing and badge coverage
-
-Target 58 minutes; reserve two minutes for delays. The schedule below includes coding and demos. Public slide notes explain concepts and resources, not timing cues, personal reminders, or presenting instructions. Protect the badge CTA at minute 56. Do not add a planned Q&A extension.
-
-| Minutes | Segment |
+| File | Responsibility |
 |---|---|
-| 0–3 | Title and native presenter introduction |
-| 3–5 | What we are building and the open-weight model stack |
-| 5–8 | Agent concepts and planning |
-| 8–9 | Slide 8, access-pattern modeling and no messages table |
-| 9–10 | Slide 9, graph, history, and streaming boundaries |
-| 10–13 | Slide 10 introduces the starting-app demo |
-| 13–16 | Data backend and memory scopes |
-| 16–23 | Step 1, durable chat state |
-| 23–30 | Step 2, memory extraction |
-| 30–37 | Step 3, owner-filtered recall |
-| 37–44 | Step 4, changing facts |
-| 44–51 | End-to-end proof |
-| 51–54 | Flexible buffer; cover caveats during the relevant demos |
-| 54–56 | Concept recap |
-| 56–58 | Badge CTA |
-| 58 | Brief Thank You sign-off |
+| `public/presentation/index.html` | Slide content and attendee-friendly notes |
+| `public/presentation/theme.css` | Fonts, colors, layout, and printing styles |
+| `public/presentation/presentation.js` | Reveal.js configuration and controls |
+| `public/presentation/vendor/` | Bundled Reveal.js runtime and plugins |
+| `public/presentation/fonts/` | Font files and OFL licenses |
+| `src/app/slides/page.tsx` | Redirect to the standalone deck |
+| `tests/unit/presentation.test.ts` | Sequence, notes, coverage, CTA, and assets |
 
-| Badge questions | Slides | Concepts |
+When adding or removing slides, update the tests, README count, badge map below, and runbook slide references. Keep visible numbering and URL hashes aligned. All non-divider content slides use a consistent heading and body grid; title, intro, demo, checkpoint, badge, and closing layouts are intentional exceptions.
+
+Reveal.js is a development dependency because runtime assets are vendored. After upgrading it, copy `dist/reveal.js`, `dist/reveal.css`, `dist/plugin/notes.js`, `dist/plugin/highlight.js`, and `LICENSE` into the vendor folder, then verify controls and PDF export. Preserve vendor and font licenses. Keep assessment screenshots and intake contact information out of public assets.
+
+## Visual design
+
+Reference: `.assets/2026 10 MongoDB Presentation Template.pdf`, 720 × 405 PDF points. The canvas is 1080 × 607.5, a 1.5× scale. Fonts and initial coordinates came from the PDF; subsequent layout refinements follow the approved deck.
+
+- Special Gothic body text, Special Gothic Condensed One headings, Source Code Pro code.
+- Navy `#001E2B`, green `#00ED64`, paper `#FDFFF5`, forest `#00684A`.
+- Standard content heading at x54/y61 and body starting at y164.
+- Three-column positions at x54, x418, and x783.
+- Split-content columns at x54 and x567.
+- Checkpoint dividers use large left-hand type and right-hand explanation/code.
+- Badge CTA uses a large left-hand headline, a discrete supplied skill-badge image, and right-hand QR/link.
+- Introduction uses native text and SVG rather than the low-resolution reference slide image.
+- Presentation uses the app's `/icon.svg` favicon.
+
+Do not introduce corporate logos, slogans, or branded footers. Technical product names, the presenter affiliation, and the specifically requested skill-badge artwork are allowed. Do not publish the template as raster backgrounds. Different text and browser rendering prevent a literal pixel-perfect PDF match.
+
+## Badge coverage
+
+Primary attendee link: https://mdb.link/hacktoberfest-2026-badge. The supplied QR was decoded and verified against that URL. Course: https://learn.mongodb.com/courses/ai-agents-with-mongodb.
+
+| Reference questions | Slides | Concepts |
 |---|---|---|
 | 1 | 5, 19 | Reasoning, tools, memory |
 | 2 | 6, 19 | Adaptive multi-step tasks versus fixed validation |
 | 3 | 7, 19 | Plan tasks, data, and tools |
-| 4 | 7, 9, 19 | A tool is a callable external-interaction function |
+| 4 | 7, 9, 19 | Tools as callable external-interaction functions |
 | 5 | 7, 11, 16, 19 | APIs, database queries, and vector retrieval |
-| 6 | 5, 9, 19 | LLM selects actions; application code executes |
+| 6 | 5, 9, 19 | LLM selects actions; code executes |
 | 7 | 9, 19 | Cyclical graph and tool-result loop |
-| 8 | 12, 16, 18, 19 | Cross-session personalization, not model retraining |
+| 8 | 12, 16, 18, 19 | Cross-thread personalization, not retraining |
 | 9 | 12, 13, 19 | Earlier discussion within a session |
-| 10 | 12, 13, 19 | Ordered turns keyed by session; checkpoint implementation keyed by thread |
+| 10 | 12, 13, 19 | Ordered session turns and thread-keyed checkpoints |
 
-The assessment screenshots stay private to the authoring reference. Slides teach concepts, not copied questions or an answer key. Attendance does not guarantee a pass or course completion.
+Teach concepts rather than reproducing assessment questions or an answer key. Attendance alone does not guarantee completion or a pass.
 
-Primary CTA: https://mdb.link/hacktoberfest-2026-badge. The supplied QR was decoded and verified to contain that exact URL. Underlying course: https://learn.mongodb.com/courses/ai-agents-with-mongodb. Share the repository separately in event chat so the final slide has one primary action.
+## Content accuracy
 
-## Accuracy and verification
+- Slide 3 draws from [the Claudius introduction](https://dev.to/mongodb/im-building-my-own-claude-based-chatbot-powered-by-mongodb-42j8). The article's planned phases are not proof of completed features.
+- Slide 4 describes gpt-oss-120b for both chat and extraction through DigitalOcean. Open weights does not imply free inference, public training data, or local execution. Voyage voyage-4 serves the separate embedding role.
+- Slides 8 and 9 link to the [data model](https://dev.to/mongodb/no-messages-table-the-data-model-behind-my-own-claude-based-chatbot-54jp) and [graph](https://dev.to/mongodb/an-agent-is-a-graph-43h0) articles. Minor does not inherit all of Claudius's collections or Bedrock model switching.
+- Only `web_search` is model-callable. Memory queries run automatically in a graph node.
+- Short-term memory describes thread scope, not storage lifetime. MongoDBSaver restores graph state using `thread_id`, not a custom messages-table query.
+- `start` uses in-process MemorySaver; Step 1 introduces MongoDBSaver.
+- Step 4 restores the completed app's recent-write checks and LLM relation comparison. Similarity is not proof of contradiction, and lineage updates are not atomic. The rebuilt `step-4` and `final` trees match the reference `main` commit.
+- Profile retrieval can work before vector indexing catches up. Persistence alone does not demonstrate semantic recall.
 
-Slide 3 draws from [the Claudius introduction article](https://dev.to/mongodb/im-building-my-own-claude-based-chatbot-powered-by-mongodb-42j8). It describes the larger project's scope without treating the article's planned phases as completed features. Slide 4 contrasts Claudius's Claude/Bedrock model layer with Minor's single gpt-oss-120b model for both chat and extraction on DigitalOcean. Actual model IDs must be verified against the endpoint; open weights do not imply open training data, free inference, or local execution.
+## Verify a deck change
 
-Slides 8 and 9 link to the [data-model article](https://dev.to/mongodb/no-messages-table-the-data-model-behind-my-own-claude-based-chatbot-54jp) and [graph article](https://dev.to/mongodb/an-agent-is-a-graph-43h0). They teach access patterns, lightweight thread headers, checkpoint-owned messages, Zod validation, the tool loop, authoritative server history, and visible streaming before the demo. At start, MemorySaver holds state in process memory; MongoDBSaver arrives at Step 1. The larger project's extra collections and model switching are not Minor features.
+Run `pnpm check`. In a browser, check affected slides at the intended capture resolution, title/body alignment, text overflow, keyboard and button navigation, notes popup, numbering, links, QR readability, and favicon. Export a PDF to inspect page count and layout.
 
-The deck distinguishes automatic memory loading from model-callable tools. Only `web_search` is model-callable in this app. Database queries and vector retrieval are tool examples in other designs.
-
-Short-term memory describes thread scope, not whether storage survives a restart. A general transcript implementation queries by session and orders turns by timestamp. This app delegates graph-state storage to MongoDBSaver and restores by `thread_id`.
-
-The historical step-4 tag uses a category/similarity heuristic. Current `main` uses recent-write checks and an LLM relation comparison to distinguish duplicate, changed, and coexisting facts. Notes flag this boundary. Neither version makes two-document lineage updates atomic. Do not repeat outdated claims about current-main batch handling from the older livestream guide.
-
-Verification performed:
-
-- `pnpm check`: typecheck, lint, unit suite, and production build.
-- Chromium: all slides rendered before this removal, no page or HTTP errors, no checked text/code boxes outside the canvas or horizontally overflowing.
-- Chromium: keyboard navigation and speaker-view popup. The `/slides` route now redirects to the standalone deck instead of embedding it.
-- Chromium: PDF export verified before this removal; the current deck contains 21 slides.
-- Native QR decoding: attendee URL matches the supplied CTA.
-
-The browser checks used temporary Playwright tooling outside the repo. They verify rendering and controls, not live inference, Atlas behavior, event timing, or a subjective pixel-perfect visual match. Rehearse the presentation at the actual StreamYard capture resolution and compare the selected layouts against the template before the event.
+Earlier Chromium checks covered rendering, navigation, notes, and PDF export; they do not prove every later edit or live-service behavior. Recheck affected layouts after changes. No rendering test establishes event timing or pixel-perfect correspondence with the reference PDF.
