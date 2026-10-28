@@ -141,7 +141,6 @@
       <div class="memory-details"><h3>Recall personal context</h3><p>Retrieve user-owned facts<br>for future personalization.<br>Combine profile queries and vector search.</p></div>
     </div>
   </div>
-  <p class="small memory-scope-note">Storage lifetime is not memory scope. A durable transcript is still thread context.</p>
   <aside class="notes">Short-term memory supplies context within a thread. A basic transcript store retrieves turns for a session ID and orders them by timestamp; unique message IDs or the latest timestamp alone do not reconstruct the conversation. Claudius Minor delegates state persistence to MongoDBSaver and uses thread_id to restore it. Long-term memory stores useful user-owned facts for personalization across threads. A durable transcript is still thread-scoped context, not automatically long-term personal memory.</aside>
 </section>
 
