@@ -123,17 +123,25 @@
 
 <section class="light columns three memory-platform-slide" data-template="38" data-background-color="#fdfff5">
   <h2>MONGODB MEMORY, POWERED BY VOYAGE AI</h2>
-  <div class="column"><span class="number compact">INTEGRATE</span><h3>LangChain + LangGraph</h3><p>MongoDBSaver persists graph state.<br>Use the MongoDB checkpoint<br>integration, not a second transcript.</p></div>
-  <div class="column"><span class="number compact">AUTO-EMBED</span><h3>Atlas Automated Embedding</h3><p>Store text. Query with text.<br>Atlas handles the embedding work.<br>No embedding SDK in this app.</p></div>
-  <div class="column"><span class="number compact">VOYAGE AI</span><h3>voyage-4 + Vector Search</h3><p>Voyage AI turns text into vectors.<br>Atlas retrieves by meaning.<br>Owner filters keep recall personal.</p></div>
-  <p class="platform-takeaway">Your app manages memories. Atlas manages their embeddings.</p>
+  <div class="column"><span class="number compact">INTEGRATE</span><h3>LangChain + LangGraph</h3><p>MongoDBSaver persists graph state.<br>Use the MongoDB checkpoint<br>integration.</p></div>
+  <div class="column"><span class="number compact">AUTO-EMBED</span><h3>Atlas Automated Embedding</h3><p>Query memories with natural language.<br>No need to sync, or separate SDKs, Atlas handles the embedding work.</p></div>
+  <div class="column"><span class="number compact">VOYAGE AI</span><h3>voyage-4 + Vector Search</h3><p>State-of-the-art embedding models and rerankers.<br>Text search, vector, hybrid and graph traversal within a unified query interface </p></div>
   <aside class="notes">MongoDB supplies the application's data backend: users, conversation headers, graph checkpoints, memory documents, and the memory vector index. Normal document queries retrieve profile facts, while Atlas Vector Search retrieves semantically relevant facts. Atlas Automated Embedding uses Voyage AI voyage-4 to embed indexed memory text and text queries. The app supplies an autoEmbed index definition and sends query text, without an embedding SDK or application-managed vector generation. MongoDBSaver comes from @langchain/langgraph-checkpoint-mongodb and persists graph state. Long-term memory documents and vector queries in this app use the MongoDB Node.js driver directly, not a LangChain vector-store wrapper. DigitalOcean inference and Tavily search remain external services; one data backend does not mean one service for every responsibility.</aside>
 </section>
 
 <section class="light memory-slide" data-template="29" data-background-color="#fdfff5">
   <h2>SHORT-TERM AND LONG-TERM MEMORY</h2>
-  <div class="statement"><p>Short-term memory:<br>this conversation.</p><p class="emphasis">Long-term memory:<br>useful facts across<br>conversations.</p></div>
-  <div class="split-detail"><h3>Retrieve the right context</h3><p>Short-term: retrieve ordered turns<br>for the correct session ID.</p><p>This app restores checkpoint state<br>using a stable <code>thread_id</code>.</p><p>Long-term: retrieve user-owned<br>facts for future personalization.</p><p class="small">Storage lifetime is not memory scope.<br>A durable transcript is still thread context.</p></div>
+  <div class="memory-comparison">
+    <div class="memory-row">
+      <div class="memory-scope"><h3>Short-term memory</h3><p>This conversation.</p></div>
+      <div class="memory-details"><h3>Restore thread context</h3><p>Retrieve ordered turns for the correct session.<br>This app restores checkpoint state<br>using a stable <code>thread_id</code>.</p></div>
+    </div>
+    <div class="memory-row">
+      <div class="memory-scope"><h3>Long-term memory</h3><p>Useful facts across<br>conversations.</p></div>
+      <div class="memory-details"><h3>Recall personal context</h3><p>Retrieve user-owned facts<br>for future personalization.<br>Combine profile queries and vector search.</p></div>
+    </div>
+  </div>
+  <p class="small memory-scope-note">Storage lifetime is not memory scope. A durable transcript is still thread context.</p>
   <aside class="notes">Short-term memory supplies context within a thread. A basic transcript store retrieves turns for a session ID and orders them by timestamp; unique message IDs or the latest timestamp alone do not reconstruct the conversation. Claudius Minor delegates state persistence to MongoDBSaver and uses thread_id to restore it. Long-term memory stores useful user-owned facts for personalization across threads. A durable transcript is still thread-scoped context, not automatically long-term personal memory.</aside>
 </section>
 
@@ -160,7 +168,7 @@ builder.compile({ checkpointer });</code></pre><p>MongoDBSaver stores checkpoint
 
 <section class="dark step-slide" data-template="85" data-background-color="#001e2b">
   <span class="chapter">03</span><h2>RECALL<br>PERSONAL<br>CONTEXT</h2>
-  <div class="step-detail"><h3>Query text, not hand-built vectors</h3><pre><code class="language-typescript">$vectorSearch: {
+  <div class="step-detail"><h3>Agent memory is a RAG app</h3><pre><code class="language-typescript">$vectorSearch: {
   index: "memories_vector",
   path: "content",
   query: { text: human },
@@ -176,8 +184,17 @@ builder.compile({ checkpointer });</code></pre><p>MongoDBSaver stores checkpoint
 
 <section class="light memory-slide" data-template="29" data-background-color="#fdfff5">
   <h2>TWO PATHS TO PERSONAL CONTEXT</h2>
-  <div class="statement"><p>Profile queries:<br>important facts.</p><p class="emphasis">Vector Search:<br>relevant facts.</p></div>
-  <div class="split-detail"><h3>Combine both paths</h3><p>Load top active memories<br>with an indexed document query.</p><p>Search meaning using<br>the last three human turns.</p><p>De-duplicate the combined context.<br>If recall fails, keep chat working.</p><p class="small">The profile path does not wait for embeddings.<br>Both paths filter by the current owner.</p></div>
+  <div class="memory-comparison">
+    <div class="memory-row">
+      <div class="memory-scope"><h3>Profile queries</h3><p>Important facts.</p></div>
+      <div class="memory-details"><h3>Load the user’s profile</h3><p>Retrieve top active memories<br>with an indexed document query.<br>No wait for embeddings.</p></div>
+    </div>
+    <div class="memory-row">
+      <div class="memory-scope"><h3>Vector Search</h3><p>Relevant facts.</p></div>
+      <div class="memory-details"><h3>Retrieve by meaning</h3><p>Search using the last three human turns.<br>Filter by the current owner and active status.<br>Combine and de-duplicate both paths.</p></div>
+    </div>
+  </div>
+  <p class="small memory-scope-note">Both paths filter by owner. If recall fails, chat continues without memory.</p>
   <aside class="notes">Personal context combines a document query for important active profile facts and vector search for facts related to the latest three human turns. Both filter by owner. The combined context is de-duplicated, and retrieval failures do not stop chat. A profile query can find a newly stored fact before its vector is searchable. The memories-used UI exposes retrieved context. These operations run in a graph node rather than as model-selected tools in this application.</aside>
 </section>
 

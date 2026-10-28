@@ -38,7 +38,13 @@ describe("livestream presentation", () => {
     expect(slides[9]).toContain("The starting application already supports streamed chat");
     expect(slides[10]).toContain("MONGODB MEMORY, POWERED BY VOYAGE AI");
     expect(slides[10]).toContain("Atlas Automated Embedding");
-    expect(slides[10]).toContain("No embedding SDK in this app");
+    expect(slides[10]).toContain("without an embedding SDK");
+    expect(slides[11]).toContain('class="memory-comparison"');
+    expect(slides[11]).toContain("Restore thread context");
+    expect(slides[11]).toContain("Recall personal context");
+    expect(slides[15]).toContain('class="memory-comparison"');
+    expect(slides[15]).toContain("Load the user’s profile");
+    expect(slides[15]).toContain("Retrieve by meaning");
     expect(slides[12]).toContain("@langchain/langgraph-checkpoint-mongodb");
     for (const slide of slides) expect(slide).toContain('class="notes"');
     for (const index of [2, 5, 7, 11, 15]) expect(slides[index]).toMatch(/<h2>[^<]+<\/h2>/);
