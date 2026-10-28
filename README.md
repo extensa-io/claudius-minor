@@ -63,6 +63,32 @@ Run `pnpm verify:live` with `APP_URL`, `APP_ACCESS_CODE`, and the matching `MONG
 
 For scripted API checks, include `x-access-code` in each request. Do not commit a populated code or use a `NEXT_PUBLIC_` variable.
 
+## Livestream slides
+
+The HTML presentation lives in this repository under `public/presentation/` and is hosted alongside the app in the same deployment. No separate slide hosting service is needed. The 21-slide deck follows the four coding steps, includes the skill badge QR code, and closes with a Thank You slide.
+
+### Open the slides
+
+- **Locally:** run `pnpm dev`, then open [localhost:3000/slides](http://localhost:3000/slides).
+- **Hosted:** append `/slides` to the deployed app's URL.
+- `/slides` redirects to `/presentation/index.html`, the standalone Reveal.js deck. Its scripts, fonts, and images are bundled locally; viewing it does not require database or inference credentials.
+
+### Present
+
+- Use the visible **← / →** buttons, arrow keys, or Space to navigate.
+- Click **Speaker notes (S)** or press `S` to open notes, the upcoming slide, and a timer in a separate window. Allow browser popups.
+- Press `F` for fullscreen. Click **Hide controls (P)** or press `P` to toggle presenter controls.
+- Share only the audience slide window in StreamYard, not the speaker-notes window.
+- Counters and URL hashes start at 1, including the title. Append `#/3` to the standalone deck URL to open **What we’re building today**.
+
+### Offline and PDF
+
+To serve just the deck without Next.js, run `python3 -m http.server 3101 --directory public/presentation` and open `http://localhost:3101`. All presentation assets work without an internet connection once available locally.
+
+To export a PDF, open `/presentation/index.html?print-pdf` in Chromium and print to PDF with background graphics enabled and no margins. Speaker notes and presenter controls are excluded.
+
+See [PRESENTATION-GUIDE.md](.assets/PRESENTATION-GUIDE.md) for StreamYard setup, offline presenting, PDF export, the 58-minute schedule, and badge concept coverage.
+
 ## Livestream guide
 
 See [LIVESTREAM-GUIDE.md](.assets/LIVESTREAM-GUIDE.md) for the detailed one-hour runbook, presenter script, setup and rehearsal steps, demo prompts, recovery plan, and tag preflight. Complete its service checks and rehearsal before presenting the repaired livestream tags.

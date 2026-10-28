@@ -1,0 +1,240 @@
+<!doctype html>
+<html lang="en">
+<head>
+  <meta charset="utf-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1">
+  <title>Build Your Own Personal Chatbot Assistant, Powered by MongoDB</title>
+  <meta name="description" content="Hacktoberfest 2026. Build an agent with durable conversations, web search, and personal memory with Néstor Daza.">
+  <link rel="icon" href="/favicon.ico">
+  <link rel="stylesheet" href="vendor/reveal.css">
+  <link rel="stylesheet" href="theme.css">
+</head>
+<body>
+<div class="reveal">
+<div class="slides">
+
+<section class="title-slide dark" data-template="6" data-background-color="#001e2b">
+  <p class="eyebrow">HACKTOBERFEST 2026 · LIVE WALKTHROUGH</p>
+  <h1>BUILD YOUR OWN<br>PERSONAL CHATBOT<br>ASSISTANT</h1>
+  <p class="subtitle">Powered by MongoDB</p>
+  <aside class="notes">00:00–01:00. Welcome. Today we will give a working chatbot durable conversations and personal memory in four small changes. MongoDB is the backend; the open-weight model provides reasoning. This is a hands-on learning project, not a production authentication example. Keep the whole session under 60 minutes. Protect the badge CTA at minute 56.</aside>
+</section>
+
+<section class="intro-slide dark" data-background-color="#001e2b">
+  <svg class="intro-art" viewBox="0 0 330 380" aria-hidden="true">
+    <rect x="12" y="38" width="284" height="220" rx="12" fill="none" stroke="currentColor" stroke-width="3"/>
+    <path d="M12 80h284" fill="none" stroke="currentColor" stroke-width="3"/>
+    <circle cx="34" cy="59" r="4" fill="currentColor"/>
+    <circle cx="50" cy="59" r="4" fill="currentColor"/>
+    <circle cx="66" cy="59" r="4" fill="currentColor"/>
+    <path d="m83 119-30 30 30 30m137-60 30 30-30 30m-51-70-28 80" fill="none" stroke="currentColor" stroke-width="6"/>
+    <path d="M47 216h74m19 0h47" fill="none" stroke="currentColor" stroke-width="3"/>
+    <path d="M167 241h147v84h-84l-35 28v-28h-28z" fill="#00ed64" stroke="#001e2b" stroke-width="8"/>
+    <path d="M195 268h91m-91 26h61" fill="none" stroke="#001e2b" stroke-width="4"/>
+  </svg>
+  <div class="intro-copy">
+    <h2>HELLO, I’M<br>NÉSTOR</h2>
+    <p class="intro-role">Developer advocate at MongoDB</p>
+    <p class="intro-contact">You can find me on <a href="https://www.extensa.io/" target="_blank" rel="noopener noreferrer">extensa.io</a></p>
+  </div>
+  <aside class="notes">01:00–03:00. Introduce yourself. The supplied introduction image guides the composition and wording; the slide uses native text and vector artwork. Néstor Daza, Developer Advocate at MongoDB. Acknowledge the diverse audience: no previous LangGraph or vector search experience is needed. Experienced developers can follow the code while newcomers follow the data flow. End the introduction by minute 3.</aside>
+</section>
+
+<section class="light split project-slide" data-template="29" data-background-color="#fdfff5">
+  <h2>WHAT WE’RE BUILDING TODAY</h2>
+  <div class="statement"><p class="emphasis">A personal AI assistant<br>that remembers,<br>using open-weight models<br>and MongoDB.</p></div>
+  <div class="split-detail"><h3>Meet Claudius Minor:</h3><p>Streamed chat and one web-search tool.<br>Conversations that survive a restart.<br>User-owned memory across threads.</p><p>Extract facts. Recall useful context.<br>Manage duplicates and changed facts.</p><p class="small">Inspired by my Claude-style Claudius project.</p>
+    <nav class="project-links" aria-label="Apps and project article">
+      <a href="/" target="_blank" rel="noopener noreferrer">Open Claudius Minor ↗</a>
+      <a href="https://github.com/extensa-io/claudius-minor" target="_blank" rel="noopener noreferrer">Code along · GitHub repo ↗</a>
+      <a href="https://www.askclaudius.dev" target="_blank" rel="noopener noreferrer">Open Claudius · askclaudius.dev ↗</a>
+      <a href="https://dev.to/mongodb/im-building-my-own-claude-based-chatbot-powered-by-mongodb-42j8" target="_blank" rel="noopener noreferrer">Read the Claudius article · DEV ↗</a>
+    </nav>
+  </div>
+  <aside class="notes">03:00–04:00. Claudius Minor simplifies my Claudius project for this one-hour build. The linked article describes Claudius as a personal Claude-style workspace using Claude through AWS Bedrock and MongoDB as its data backbone. Its broader scope includes model switching, file retrieval, and research workflows; the article introduces a phased build, not proof that every planned feature was already complete. Today we focus on chat, one web-search tool, durable conversation state, and user-owned long-term memory. This is not Claude, a Claude clone, or an Anthropic-endorsed product. Source: https://dev.to/mongodb/im-building-my-own-claude-based-chatbot-powered-by-mongodb-42j8.</aside>
+</section>
+
+<section class="dark columns three stack-slide" data-template="31" data-background-color="#001e2b">
+  <h2>THE STACK: OPEN-WEIGHT MODELS, DURABLE DATA</h2>
+  <div class="column"><span class="number compact">MODEL</span><h3>Open weights, hosted inference</h3><p>One model: gpt-oss-120b.<br>Chat and memory extraction.<br>DigitalOcean Serverless Inference.</p></div>
+  <div class="column"><span class="number compact">APP</span><h3>UI, graph, and tools</h3><p>Next.js + React + TypeScript.<br>LangGraph orchestrates the agent.<br>Tavily supplies web search.</p></div>
+  <div class="column"><span class="number compact">DATA</span><h3>MongoDB Atlas</h3><p>Documents + MongoDBSaver.<br>Atlas Vector Search.<br>Automated Embedding: voyage-4.</p></div>
+  <aside class="notes">04:00–05:00. Emphasize that gpt-oss-120b has OPEN WEIGHTS. That describes availability of model weights, not a claim that the full training dataset is open, that inference is free, or that this demo runs locally. DigitalOcean hosts inference and the Next.js app on App Platform. This session uses one model, gpt-oss-120b, for both chat and memory extraction. CHAT_MODEL and EXTRACTION_MODEL select the same verified model ID. Separate environment variable names do not imply different models. Do not present a guessed endpoint ID as verified. MongoDB Atlas handles the data backend; Automated Embedding uses Voyage voyage-4. Do not describe Voyage as open-weight. LangGraph coordinates code execution, while Tavily is the external web-search service. Keep this slide under one minute.</aside>
+</section>
+
+<section class="light columns three" data-template="32" data-background-color="#fdfff5">
+  <h2>THREE PARTS OF AN AI AGENT</h2>
+  <div class="column"><span class="number">01</span><h3>Reasoning</h3><p>The LLM interprets a goal,<br>plans the next step, and<br>chooses a tool when needed.</p></div>
+  <div class="column"><span class="number">02</span><h3>Tools</h3><p>Callable functions let the<br>agent retrieve data and<br>act on external systems.</p></div>
+  <div class="column"><span class="number">03</span><h3>Memory</h3><p>Conversation context and<br>durable facts help the agent<br>respond with continuity.</p></div>
+  <aside class="notes">05:00–06:00. Badge concepts Q1 and Q6. Define LLM as large language model. Reasoning is not magic: the model proposes the next action based on its input. The app, not the LLM, executes functions and handles database connections. Memory is context supplied to the model, not a change to the model's weights.</aside>
+</section>
+
+<section class="light workflow-slide" data-template="29" data-background-color="#fdfff5">
+  <h2>FIXED WORKFLOW OR AI AGENT?</h2>
+  <h3 class="workflow-example-heading">Airline support example</h3>
+  <div class="workflow-row deterministic">
+    <p class="workflow-case">Known steps?<br>Use a fixed workflow.</p>
+    <p class="workflow-example">Check for a booking number:<br>a predictable validation rule.</p>
+  </div>
+  <div class="workflow-row non-deterministic">
+    <p class="workflow-case">Non-deterministic Workflow?<br><span class="agent-highlight">Consider an agent.</span></p>
+    <p class="workflow-example">Resolve a refund request:<br>inspect the account, evaluate<br>policy, then take approved actions.</p>
+  </div>
+  <p class="small workflow-safeguards">Consequential actions need permissions,<br>validation, and approval boundaries.</p>
+  <aside class="notes">06:00–07:00. Badge Q2. Fixed categorization, required-field validation, and autocomplete generally need less autonomy. A support agent can coordinate account lookup and refund actions when the next step depends on results. Do not claim every refund needs an agent. Policy enforcement and approvals belong in trusted code. Our demo only exposes web search; it does not perform financial actions.</aside>
+</section>
+
+<section class="dark columns three" data-template="31" data-background-color="#001e2b">
+  <h2>PLAN THE TASKS, DATA, AND TOOLS</h2>
+  <div class="column"><span class="number">01</span><h3>Tasks</h3><p>Answer questions.<br>Find current information.<br>Personalize responses.</p></div>
+  <div class="column"><span class="number">02</span><h3>Data</h3><p>Current conversation.<br>User-owned facts.<br>External search results.</p></div>
+  <div class="column"><span class="number">03</span><h3>Tools</h3><p>Web search in this app.<br>APIs, database queries, and<br>vector retrieval in other agents.</p></div>
+  <aside class="notes">07:00–08:00. Badge Q3, Q4, Q5. Identify tasks, required data, and tools before choosing infrastructure. Tools are specialized callable functions, not an IDE or editing UI. Examples: a movie API for actors, a profile database query, vector retrieval for movie recommendations. In this app only web_search is model-callable. The memory node performs retrieval automatically. Next explain the data model and graph before showing the starting app.</aside>
+</section>
+
+<section class="light split data-model-slide" data-template="29" data-background-color="#fdfff5">
+  <h2>NO MESSAGES TABLE</h2>
+  <div class="statement"><p class="emphasis">Model around<br>how the app<br>reads and writes.</p></div>
+  <div class="split-detail"><h3>Two reads, two responsibilities</h3><p><strong>Thread list reads conversation headers</strong><br>Owner, title, timestamps, watermark.<br>From the <code>conversations</code> collection.</p><p><strong>Current thread reads checkpoint messages</strong><br>Messages live with the agent state.<br>No second authoritative transcript.</p><p class="small">At start: checkpoints stay in memory.<br>Step 1: persist them in MongoDB.</p><p class="small">Schema-flexible is not schemaless.<br>Zod validates application boundaries.</p></div>
+  <a class="article-link" href="https://dev.to/mongodb/no-messages-table-the-data-model-behind-my-own-claude-based-chatbot-54jp" target="_blank" rel="noopener noreferrer">Read: No messages table · DEV ↗</a>
+  <aside class="notes">08:00–09:00. Explain access-pattern-first modeling before opening the app. The sidebar reads lightweight conversations records, not an embedded message array. The open thread reads messages through LangGraph state. No application messages collection duplicates the authoritative history. At start, MemorySaver holds graph state only in process memory; Step 1 moves checkpoint storage to MongoDBSaver. Do not imply durable checkpoints already exist at start. MongoDBSaver owns checkpoints and checkpoint_writes; the application checks conversation ownership before reading state. Zod validates inputs and model output; TypeScript alone is not runtime validation. Use src/lib/schemas.ts and records from this repo, not the larger Claudius article's extra collections. Source: https://dev.to/mongodb/no-messages-table-the-data-model-behind-my-own-claude-based-chatbot-54jp. Do not repeat the article's exact-deadline TTL claim or imply an index automatically supplies owner filters; neither is part of this lesson.</aside>
+</section>
+
+<section class="dark flow-slide" data-template="100" data-background-color="#001e2b">
+  <h2>AN AGENT IS A GRAPH</h2>
+  <p class="lead">Not just a prompt. State, decisions, and a tool-result loop.</p>
+  <div class="flow" role="img" aria-label="Start goes to load context, then agent. Agent either answers or calls tools. Tool results loop back to agent.">
+    <span class="node start">START</span><span class="arrow">→</span><span class="node">Load context</span><span class="arrow">→</span><span class="node agent-node">Agent</span><span class="arrow">→</span><span class="node">Answer / END</span>
+    <div class="loop"><span>↑</span><span>Tools → result</span><span>↓</span></div>
+  </div>
+  <p class="flow-caption">The LLM selects a callable function. Application code executes it.<br>The server supplies history; the browser sends only the new message.<br>Streaming makes both answer text and tool activity visible.</p>
+  <a class="article-link" href="https://dev.to/mongodb/an-agent-is-a-graph-43h0" target="_blank" rel="noopener noreferrer">Read: An agent is a graph · DEV ↗</a>
+  <aside class="notes">09:00–10:00. Badge Q4–Q7. START → load_context → agent. If the model requests a tool, tools executes it and returns the result to agent; otherwise the run ends. This cyclical graph coordinates multiple steps, not just a clever prompt. At start, load_context remains a deliberate empty stub. The browser sends new text and a conversation ID, not an authoritative transcript. The server checks ownership and LangGraph restores thread state. The event bridge translates graph token and tool events into UI message parts, making web_search visible. Minor uses one gpt-oss-120b model; do not import the article's Claude/Bedrock model switching. Briefly point to src/lib/agent.ts and src/lib/stream.ts rather than narrating the whole bridge implementation. Source: https://dev.to/mongodb/an-agent-is-a-graph-43h0. Now demo what these boundaries look like on screen.</aside>
+</section>
+
+<section class="dark demo-slide" data-template="6" data-background-color="#001e2b">
+  <p class="eyebrow">LIVE DEMO · THE STARTING APP</p>
+  <h2>LET’S MEET<br>CLAUDIUS MINOR</h2>
+  <p class="demo-description">Stream a conversation. Search the web.<br>See the data model and graph in action.</p>
+  <a class="demo-app-link" href="/" target="_blank" rel="noopener noreferrer">Open the app ↗</a>
+  <aside class="notes">10:00–13:00. Switch to the start-checkpoint app in the separate live worktree. The link opens this deployment's app; use your prepared live-worktree tab if the deployment runs the completed version. Select Angela. Show the sidebar as a list of conversation headers. Send a greeting and point out streaming text. Request current information to trigger visible web_search activity and inspect the returned sources. Optionally show the request carrying only new text and a conversation ID, never credentials or access headers. Point out the empty memory panel only when actually showing start. The conversation is still in MemorySaver and will not survive a server restart yet. Transition: chat and search work; now we make graph state durable and add personal memory. Retry provider failures once, then use the rehearsed fallback. Keep this demo to three minutes.</aside>
+</section>
+
+<section class="light columns three" data-template="38" data-background-color="#fdfff5">
+  <h2>ONE DATABASE, SEVERAL RESPONSIBILITIES</h2>
+  <div class="column"><span class="number compact">STATE</span><h3>Durable conversations</h3><p>MongoDBSaver stores<br>LangGraph checkpoints.<br>A stable thread ID restores state.</p></div>
+  <div class="column"><span class="number compact">FACTS</span><h3>Personal memory</h3><p>Documents hold facts, owners,<br>importance, and lineage.<br>Normal queries load a profile.</p></div>
+  <div class="column"><span class="number compact">RECALL</span><h3>Semantic retrieval</h3><p>Atlas Automated Embedding<br>uses Voyage voyage-4.<br>Vector Search finds relevant facts.</p></div>
+  <aside class="notes">13:00–14:30. Explain the strength without a sales pitch: one database for users, conversations, checkpoint state, memory documents, and the memory vector index. The model runs through DigitalOcean Serverless Inference; Tavily supplies search. MongoDB is the entire data backend, not the only service. Automated Embedding avoids application embedding calls. State the real product names but use no corporate logo or slogan.</aside>
+</section>
+
+<section class="light memory-slide" data-template="29" data-background-color="#fdfff5">
+  <h2>SHORT-TERM AND LONG-TERM MEMORY</h2>
+  <div class="statement"><p>Short-term memory:<br>this conversation.</p><p class="emphasis">Long-term memory:<br>useful facts across<br>conversations.</p></div>
+  <div class="split-detail"><h3>Retrieve the right context</h3><p>Short-term: retrieve ordered turns<br>for the correct session ID.</p><p>This app restores checkpoint state<br>using a stable <code>thread_id</code>.</p><p>Long-term: retrieve user-owned<br>facts for future personalization.</p><p class="small">Storage lifetime is not memory scope.<br>A durable transcript is still thread context.</p></div>
+  <aside class="notes">14:30–16:00. Badge Q8, Q9, Q10. Example: asking “What did we discuss about backups?” requires earlier turns in this session. A basic transcript store filters by session ID and sorts turns by timestamp; unique message IDs or the latest timestamp alone do not reconstruct a conversation. Our implementation uses MongoDBSaver rather than a custom transcript query. Durable checkpoint storage does not turn thread context into long-term personal memory. Long-term facts support recommendations across sessions; no offline promise or model retraining.</aside>
+</section>
+
+<section class="dark step-slide" data-template="85" data-background-color="#001e2b">
+  <span class="chapter">01</span><h2>DURABLE<br>CHAT<br>STATE</h2>
+  <div class="step-detail"><h3>Keep the same thread ID</h3><pre><code class="language-typescript">new MongoDBSaver({
+  client: await getClient(),
+  dbName: DATABASE_NAME,
+});
+
+builder.compile({ checkpointer });</code></pre><p>Restart the app.<br>Restore the conversation.</p></div>
+  <aside class="notes">16:00–23:00, INCLUDING live coding. Step 1. Replace MemorySaver with the installed MongoDBSaver accessor. Use src/lib/checkpointer.ts, not an API from memory. Preserve thread_id and verify ownership before reading checkpoint-derived history. Run pnpm typecheck and pnpm test. Send a message, restart, reopen the same thread. Helper tests do not verify a live provider or database. End this segment by minute 23. Use an isolated live worktree; keep slides in the prepared worktree so tag changes do not remove them.</aside>
+</section>
+
+<section class="dark step-slide" data-template="85" data-background-color="#001e2b">
+  <span class="chapter">02</span><h2>WRITE<br>USEFUL<br>MEMORIES</h2>
+  <div class="step-detail"><h3>Extract, validate, store</h3><p>Read new human and assistant text.<br>Exclude tool calls and results.<br>Validate durable facts.<br>Store owner and source.<br>Advance the extraction watermark.</p><pre><code class="language-json">{
+  "content": "I am learning pottery",
+  "category": "interest",
+  "status": "active"
+}</code></pre></div>
+  <aside class="notes">23:00–30:00, INCLUDING live coding. Step 2. Read only text after the extraction watermark. Exclude tool activity so web content does not become a personal fact. The JSON is illustrative, not a full record or an exact extractor output; show the actual document fields in the app. Add userId, sourceConversationId, importance, and timestamps in trusted code. Use the prepared step-1..step-2 diff for the tagged extraction module; current main has inline extraction in the chat route. Run tests and typecheck. Tell Angela: “I live in Toronto and I am learning pottery.” Show the stored record. Only advance the watermark on successful processing. No credentials on screen.</aside>
+</section>
+
+<section class="dark step-slide" data-template="85" data-background-color="#001e2b">
+  <span class="chapter">03</span><h2>RECALL<br>PERSONAL<br>CONTEXT</h2>
+  <div class="step-detail"><h3>Filter inside the query</h3><pre><code class="language-typescript">$vectorSearch: {
+  index: "memories_vector",
+  path: "content",
+  query: { text: human },
+  numCandidates: 100,
+  limit: 10,
+  filter: {
+    userId: { $eq: owner },
+    status: { $eq: "active" },
+  },
+}</code></pre></div>
+  <aside class="notes">30:00–33:00, first part of step 3. Teach semantic similarity in plain language: different words can express related ideas. Atlas embeds indexed text and the query with Automated Embedding. This excerpt matches src/lib/agent.ts. The owner and active-status pre-filter is part of vector search, not a promise in the prompt. Implement the load_context node from the audited diff. The current recall score floor is 0.65, a heuristic, not a universal semantic threshold. Do not report unmeasured index latency.</aside>
+</section>
+
+<section class="light memory-slide" data-template="29" data-background-color="#fdfff5">
+  <h2>TWO PATHS TO PERSONAL CONTEXT</h2>
+  <div class="statement"><p>Profile queries:<br>important facts.</p><p class="emphasis">Vector Search:<br>relevant facts.</p></div>
+  <div class="split-detail"><h3>Combine both paths</h3><p>Load top active memories<br>with an indexed document query.</p><p>Search meaning using<br>the last three human turns.</p><p>De-duplicate the combined context.<br>If recall fails, keep chat working.</p><p class="small">The profile path does not wait for embeddings.<br>Both paths filter by the current owner.</p></div>
+  <aside class="notes">33:00–37:00, INCLUDING the rest of live coding and demo. Badge Q5, Q8. Explain database queries and vector retrieval as potential tools in other designs; here they are automatic graph-node operations. Finish step 3, run tests and typecheck. Ask Angela a pottery-related follow-up. Switch to Betty and confirm Angela's facts are absent. Show the memories-used UI as evidence. Profile query can find a record before its embedding is searchable. Do not claim vector recall when only profile loading occurred. End by minute 37.</aside>
+</section>
+
+<section class="dark step-slide" data-template="85" data-background-color="#001e2b">
+  <span class="chapter">04</span><h2>MANAGE<br>CHANGING<br>FACTS</h2>
+  <div class="step-detail"><h3>Insert · skip · supersede</h3><p>New fact → insert.<br>Duplicate fact → skip.<br>Changed fact → supersede.</p><pre><code class="language-text">Old: I live in Toronto
+  status: superseded
+  supersededBy → new record
+
+New: I live in Montréal
+  status: active
+  supersedes → old record</code></pre></div>
+  <aside class="notes">37:00–44:00, INCLUDING live coding. Step 4. Enable the prepared skipped decision tests, show the expected failures, implement the pure action decision and lineage persistence, then run tests and typecheck. Important version boundary: the historical step-4 demo uses a similarity/category heuristic. Current main supplements semantic neighbors with recent writes and a structured LLM relation comparison so related but distinct facts can coexist. Similarity alone does not establish contradiction. Never describe the historical heuristic as production truth detection. Updating two documents is not an atomic transaction in current persistence. Do not promise transactional lineage. End by minute 44.</aside>
+</section>
+
+<section class="light columns three" data-template="32" data-background-color="#fdfff5">
+  <h2>PROVE IT FROM THE USER’S POINT OF VIEW</h2>
+  <div class="column"><span class="number">01</span><h3>Persistence</h3><p>Send a message.<br>Restart the server.<br>Reopen the same conversation.</p></div>
+  <div class="column"><span class="number">02</span><h3>Personalization</h3><p>State a durable fact.<br>Start a fresh conversation.<br>Ask a related question.</p></div>
+  <div class="column"><span class="number">03</span><h3>Isolation and lineage</h3><p>Switch to another persona.<br>Confirm memories stay separate.<br>Update a fact and inspect its history.</p></div>
+  <aside class="notes">44:00–51:00, INCLUDING end-to-end demo. Show actual durable thread state, fresh-conversation recall, owner isolation, and supersession. Use synthetic facts only. The persona cookie is a demo switcher, not authentication. Do not use real attendee or personal data. The existing runbook's early helper tests are not live-service proof, and some descriptions predate current main. If a provider fails, use the rehearsed backup with a clear label. Explain embedding lag without inventing measurements. If behind schedule, compress this demo, not the badge CTA.</aside>
+</section>
+
+<section class="dark columns three recap" data-template="31" data-background-color="#001e2b">
+  <h2>TAKE THESE CONCEPTS WITH YOU</h2>
+  <div class="column"><span class="number compact">PLAN</span><h3>Choose the right agent</h3><p>Reasoning + tools + memory.<br>Identify tasks, data, and tools.<br>Use fixed rules for fixed steps.</p></div>
+  <div class="column"><span class="number compact">ACT</span><h3>Separate responsibilities</h3><p>The LLM chooses the next action.<br>Code executes API and data tools.<br>A cyclical graph can loop.</p></div>
+  <div class="column"><span class="number compact">REMEMBER</span><h3>Retrieve the right scope</h3><p>Ordered turns for a session.<br>Durable facts across sessions.<br>Owner-filtered personal context.</p></div>
+  <aside class="notes">54:00–56:00. Recap all badge concepts without displaying the assessment or answer key. Tools can include a vector retrieval function, movie API, or user-profile database query. Session context reconstructs ordered turns, generally by session ID and timestamps; long-term memory carries useful facts across sessions. LLM reasons, application code executes. Invite people to complete the badge themselves. Do not promise passing or course completion from attendance alone. Move to the QR by minute 56.</aside>
+</section>
+
+<section class="dark badge-slide" data-template="85" data-background-color="#001e2b">
+  <div class="badge-copy"><h2>EARN YOUR<br>BUILD AGENTS<br>WITH MONGODB<br>SKILL BADGE</h2></div>
+  <img class="skill-badge" src="skill-badge.png" width="1878" height="1888" alt="MongoDB Skill Badge">
+  <a class="qr-link" href="https://mdb.link/hacktoberfest-2026-badge" target="_blank" rel="noopener noreferrer" aria-label="Open the Build Agents with MongoDB Skill Badge"><img src="badge-qr.png" width="490" height="490" alt="QR code for mdb.link/hacktoberfest-2026-badge"></a>
+  <a class="badge-url" href="https://mdb.link/hacktoberfest-2026-badge" target="_blank" rel="noopener noreferrer">mdb.link/hacktoberfest-2026-badge</a>
+  <aside class="notes">56:00–58:00. Primary and only closing CTA: earn your Build Agents with MongoDB Skill Badge at https://mdb.link/hacktoberfest-2026-badge. Underlying course: https://learn.mongodb.com/courses/ai-agents-with-mongodb. Leave the QR visible while thanking viewers and MLH. Say the link aloud. MongoDB can back conversation state, personal memory, and semantic retrieval in one system. No sales slogan. Reserve minutes 58–60 as buffer, not a planned Q&A extension. Put repo resources in the event chat separately.</aside>
+</section>
+`
+<section class="dark demo-slide" data-template="6" data-background-color="#001e2b">
+  <p class="eyebrow">HACKTOBERFEST 2026</p>
+  <h2>THANK YOU</h2>
+  <p class="demo-description">Néstor Daza · <a href="https://www.extensa.io/" target="_blank" rel="noopener noreferrer">extensa.io</a></p>
+  <aside class="notes">58:00. Close briefly and thank the audience and MLH. Keep the total session below 60 minutes. Leave the badge slide visible while explaining the CTA, then advance here for the final sign-off.</aside>
+</section>
+
+</div>
+</div>
+<nav class="presenter-controls" aria-label="Presentation controls">
+  <button id="previous-slide" type="button" aria-label="Previous slide">←</button>
+  <button id="next-slide" type="button" aria-label="Next slide">→</button>
+  <button id="speaker-notes" type="button">Speaker notes (S)</button>
+  <button id="hide-controls" type="button" title="Press P to show controls again">Hide controls (P)</button>
+</nav>
+<div id="presentation-error" role="alert" hidden>Presentation controls could not load. Reload this page, or use your saved PDF backup.</div>
+<script src="vendor/reveal.js"></script>
+<script src="vendor/notes.js"></script>
+<script src="vendor/highlight.js"></script>
+<script src="presentation.js"></script>
+</body>
+</html>
