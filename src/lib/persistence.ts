@@ -19,7 +19,7 @@ export async function persistCandidate(candidate: Candidate, userId: ObjectId, c
     { $project: { _id: 1, content: 1, category: 1, score: 1 } },
   ]).toArray();
   // Include unindexed recent writes so one extraction batch can deduplicate itself.
-  const recent = await memories.find({ userId, status: "active", category: candidate.category }).sort({ createdAt: -1 }).limit(20).toArray();
+  const recent = await memories.find({ userId, status: "active" }).sort({ createdAt: -1 }).limit(20).toArray();
   const hits = [...neighbors];
   for (const memory of recent) if (!hits.some((hit) => hit._id.equals(memory._id))) hits.push({ ...memory, score: 0 });
   const exact = decideMemoryAction(candidate, hits);

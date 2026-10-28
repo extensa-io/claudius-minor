@@ -45,8 +45,11 @@ function ChatApp({ accessCode, lock }: { accessCode: string; lock: () => void })
     const headers = new Headers(init?.headers);
     headers.set("x-access-code", accessCode);
     const response = await fetch(url, { ...init, headers });
-    if (response.status === 401 || response.status === 503) lock();
-    if (!response.ok) throw new Error("The request failed.");
+    if (response.status === 401) lock();
+    if (!response.ok) {
+      const data = await response.json().catch(() => ({})) as { error?: string };
+      throw new Error(data.error ?? `Request failed (${response.status}).`);
+    }
     return response;
   }, [accessCode, lock]);
   const [personas, setPersonas] = useState<Persona[]>([]);
@@ -56,6 +59,8 @@ function ChatApp({ accessCode, lock }: { accessCode: string; lock: () => void })
   const [conversationId, selectConversation] = useState<string>();
   const [input, setInput] = useState("");
   const [requestError, setRequestError] = useState("");
+  const [actionPending, setActionPending] = useState(false);
+  const [extractionStatus, setExtractionStatus] = useState("");
   const [resetting, setResetting] = useState(false);
   const [resetOpen, setResetOpen] = useState(false);
   const [confirmation, setConfirmation] = useState("");
@@ -64,8 +69,9 @@ function ChatApp({ accessCode, lock }: { accessCode: string; lock: () => void })
       const [conversationResponse, memoryResponse] = await Promise.all([apiFetch("/api/conversations"), apiFetch("/api/memories")]);
       setConversations(((await conversationResponse.json()) as { conversations: Conversation[] }).conversations);
       setMemories(((await memoryResponse.json()) as { memories: Memory[] }).memories);
-    } catch {
-      setRequestError("Could not load conversations or memories.");
+      setRequestError("");
+    } catch (error) {
+      setRequestError(error instanceof Error ? error.message : "Could not load conversations or memories.");
     }
   }, [apiFetch]);
   const { messages, sendMessage, setMessages, status, error: chatError } = useChat({
@@ -77,6 +83,7 @@ function ChatApp({ accessCode, lock }: { accessCode: string; lock: () => void })
       }),
     }),
     onData: (part) => {
+      if (part.type === "data-extraction" && typeof part.data === "object" && part.data !== null && "status" in part.data) setExtractionStatus(String(part.data.status));
       if (part.type === "data-conversation" && typeof part.data === "object" && part.data !== null && "id" in part.data && typeof part.data.id === "string") selectConversation(part.data.id);
     },
   });
@@ -85,27 +92,42 @@ function ChatApp({ accessCode, lock }: { accessCode: string; lock: () => void })
       setPersonas(data.users);
       setUserId(data.currentUserId ?? "");
       if (data.currentUserId) window.setTimeout(() => void refresh(), 0);
-    }).catch(() => setRequestError("Could not load personas."));
+    }).catch((error: unknown) => setRequestError(error instanceof Error ? error.message : "Could not load personas."));
   }, [refresh, apiFetch]);
   useEffect(() => {
     if (status === "ready" && messages.length > 0) window.setTimeout(() => void refresh(), 500);
   }, [status, messages, refresh]);
+  async function runAction(action: () => Promise<void>) {
+    setActionPending(true);
+    setRequestError("");
+    try { await action(); } catch (error) {
+      setRequestError(error instanceof Error ? error.message : "The request failed. Try again.");
+    } finally { setActionPending(false); }
+  }
   async function switchPersona(id: string) {
-    await apiFetch("/api/users/switch", { method: "POST", headers: { "content-type": "application/json" }, body: JSON.stringify({ userId: id }) });
-    setUserId(id);
-    selectConversation(undefined);
-    setMessages([]);
-    await refresh();
+    if (!id) return;
+    await runAction(async () => {
+      await apiFetch("/api/users/switch", { method: "POST", headers: { "content-type": "application/json" }, body: JSON.stringify({ userId: id }) });
+      setUserId(id);
+      selectConversation(undefined);
+      setMessages([]);
+      setExtractionStatus("");
+      await refresh();
+    });
   }
   async function openConversation(id: string) {
-    const response = await apiFetch(`/api/conversations/${id}`);
-    const data = await response.json() as { messages?: Array<{ role: "user" | "assistant"; content: string }> };
-    selectConversation(id);
-    setMessages((data.messages ?? []).map((message, index): UIMessage => ({ id: `${id}-${index}`, role: message.role, parts: [{ type: "text", text: message.content }] })));
+    await runAction(async () => {
+      const response = await apiFetch(`/api/conversations/${id}`);
+      const data = await response.json() as { messages: Array<{ role: "user" | "assistant"; content: string }> };
+      selectConversation(id);
+      setMessages(data.messages.map((message, index): UIMessage => ({ id: `${id}-${index}`, role: message.role, parts: [{ type: "text", text: message.content }] })));
+    });
   }
   async function removeMemory(id: string) {
-    await apiFetch(`/api/memories/${id}`, { method: "DELETE" });
-    await refresh();
+    await runAction(async () => {
+      await apiFetch(`/api/memories/${id}`, { method: "DELETE" });
+      await refresh();
+    });
   }
   async function resetPersona() {
     setResetting(true);
@@ -120,18 +142,18 @@ function ChatApp({ accessCode, lock }: { accessCode: string; lock: () => void })
       setResetOpen(false);
       setConfirmation("");
       await refresh();
-    } catch {
-      setRequestError("Reset failed. Try again or check the server logs.");
+    } catch (error) {
+      setRequestError(error instanceof Error ? error.message : "Reset failed. Try again.");
     } finally {
       setResetting(false);
     }
   }
-  const busy = resetting || status === "streaming" || status === "submitted";
+  const busy = actionPending || resetting || status === "streaming" || status === "submitted";
   return <main className="shell">
     <aside className="sidebar"><h1>{siteTitle}</h1><label>Persona<select disabled={busy || resetOpen} value={userId} onChange={(event) => void switchPersona(event.target.value)}><option value="">Choose persona</option>{personas.map((persona) => <option key={persona.id} value={persona.id}>{persona.name}</option>)}</select></label><button className="new-chat" disabled={busy || resetOpen} onClick={() => { selectConversation(undefined); setMessages([]); }}>New conversation</button><h2>Conversations</h2>{conversations.map((conversation) => <button className="conversation" disabled={busy || resetOpen} key={conversation.id} onClick={() => void openConversation(conversation.id)}>{conversation.title}</button>)}</aside>
-    <section className="chat"><header><strong className="chat-title"><span className="desktop-chat-title">Chat</span><span className="mobile-site-title">{siteTitle}</span></strong><div className="chat-header-actions"><span>MongoDB-backed agent memory</span><button className="reset-demo" disabled={!userId || busy} onClick={() => { setConfirmation(""); setResetOpen(true); }}>Reset persona</button><button className="lock-demo" onClick={lock} title="Clear the access code and return to the entry screen">Lock demo</button></div></header><div className="messages">{messages.map((message) => <article className={message.role === "user" ? "user-message" : "assistant-message"} key={message.id}>{message.parts.map((part, index) => part.type === "text" ? message.role === "assistant" ? <MessageMarkdown key={index}>{part.text}</MessageMarkdown> : <p className="user-text" key={index}>{part.text}</p> : part.type === "dynamic-tool" ? <small key={index}>Searching the web...</small> : part.type === "data-memories" ? <small key={index}>Used memory to personalize this answer</small> : null)}</article>)}{requestError && <p role="alert">{requestError}</p>}{chatError && <p role="alert">Chat failed. Check your access code or server logs.</p>}</div><form onSubmit={(event) => { event.preventDefault(); if (input.trim() && userId && !busy && !resetOpen) { void sendMessage({ text: input }, { body: { conversationId } }); setInput(""); } }}><textarea disabled={busy || resetOpen} value={input} onChange={(event) => setInput(event.target.value)} placeholder="Ask Claudius Minor something..." /><button disabled={!userId || busy || resetOpen}>Send</button></form></section>
+    <section className="chat"><header><strong className="chat-title"><span className="desktop-chat-title">Chat</span><span className="mobile-site-title">{siteTitle}</span></strong><div className="chat-header-actions"><span>MongoDB-backed agent memory</span><button className="reset-demo" disabled={!userId || busy} onClick={() => { setConfirmation(""); setResetOpen(true); }}>Reset persona</button><button className="lock-demo" onClick={lock} title="Clear the access code and return to the entry screen">Lock demo</button></div></header><div className="mobile-controls"><label>Persona<select disabled={busy || resetOpen} value={userId} onChange={(event) => void switchPersona(event.target.value)}><option value="">Choose persona</option>{personas.map((persona) => <option key={persona.id} value={persona.id}>{persona.name}</option>)}</select></label><button disabled={busy || resetOpen} onClick={() => { selectConversation(undefined); setMessages([]); }}>New conversation</button><label>Conversation<select disabled={busy || resetOpen} value={conversationId ?? ""} onChange={(event) => { if (event.target.value) void openConversation(event.target.value); }}><option value="">Choose conversation</option>{conversations.map((conversation) => <option key={conversation.id} value={conversation.id}>{conversation.title}</option>)}</select></label></div><div className="messages">{messages.map((message) => <article className={message.role === "user" ? "user-message" : "assistant-message"} key={message.id}>{message.parts.map((part, index) => part.type === "text" ? message.role === "assistant" ? <MessageMarkdown key={index}>{part.text}</MessageMarkdown> : <p className="user-text" key={index}>{part.text}</p> : part.type === "dynamic-tool" ? <small key={index}>Searching the web...</small> : part.type === "data-memories" ? <small key={index}>Used memory to personalize this answer</small> : null)}</article>)}{extractionStatus === "running" && status === "streaming" && <p role="status">Saving memories...</p>}{extractionStatus === "failed" && <p role="alert">The answer was saved, but memory extraction failed. The next turn will retry extraction.</p>}{requestError && <p role="alert">{requestError}</p>}{chatError && <p role="alert">{chatError.message || "Chat failed. Try again."}</p>}</div><form onSubmit={(event) => { event.preventDefault(); if (input.trim() && userId && !busy && !resetOpen) { setExtractionStatus(""); void sendMessage({ text: input }, { body: { conversationId } }).catch((error: unknown) => setRequestError(error instanceof Error ? error.message : "Chat failed.")); setInput(""); } }}><textarea maxLength={4000} disabled={busy || resetOpen} value={input} onChange={(event) => setInput(event.target.value)} placeholder="Ask Claudius Minor something..." /><button disabled={!userId || busy || resetOpen}>Send</button></form></section>
     <aside className="memory-panel"><h2>Memory</h2><p>Memories belong to {personas.find((persona) => persona.id === userId)?.name ?? "this persona"}.</p>{memories.map((memory) => <article className={memory.status === "superseded" ? "memory old-memory" : "memory"} key={memory.id}><div><b>{memory.category}</b><span>Importance {memory.importance.toFixed(1)}</span></div><p>{memory.content}</p>{memory.supersededBy && <small>Replaced by a newer memory</small>}<button disabled={busy || resetOpen} onClick={() => void removeMemory(memory.id)}>Delete</button></article>)}</aside>
     {siteFooter}
-    {resetOpen && <div className="reset-backdrop"><section className="reset-dialog" role="dialog" aria-modal="true" aria-labelledby="reset-title"><h2 id="reset-title">Reset {personas.find((persona) => persona.id === userId)?.name}</h2><p>This permanently deletes all conversations, saved messages, and memories for this persona. Other personas stay untouched.</p><p>Wait for any background memory extraction to finish before resetting.</p><form onSubmit={(event) => { event.preventDefault(); if (confirmation === "RESET" && !busy) void resetPersona(); }}><label htmlFor="reset-confirmation">Type RESET to confirm</label><input id="reset-confirmation" autoFocus autoComplete="off" value={confirmation} disabled={resetting} onChange={(event) => setConfirmation(event.target.value)} /><div className="reset-actions"><button type="button" disabled={resetting} onClick={() => setResetOpen(false)}>Cancel</button><button className="confirm-reset" disabled={confirmation !== "RESET" || busy}>{resetting ? "Resetting..." : "Delete persona data"}</button></div></form>{requestError && <p role="alert">{requestError}</p>}</section></div>}
+    {resetOpen && <div className="reset-backdrop"><section className="reset-dialog" role="dialog" aria-modal="true" aria-labelledby="reset-title"><h2 id="reset-title">Reset {personas.find((persona) => persona.id === userId)?.name}</h2><p>This permanently deletes all conversations, saved messages, and memories for this persona. Other personas stay untouched.</p><p>The server rejects resets while any chat or memory extraction is running.</p><form onSubmit={(event) => { event.preventDefault(); if (confirmation === "RESET" && !busy) void resetPersona(); }}><label htmlFor="reset-confirmation">Type RESET to confirm</label><input id="reset-confirmation" autoFocus autoComplete="off" value={confirmation} disabled={resetting} onChange={(event) => setConfirmation(event.target.value)} /><div className="reset-actions"><button type="button" disabled={resetting} onClick={() => setResetOpen(false)}>Cancel</button><button className="confirm-reset" disabled={confirmation !== "RESET" || busy}>{resetting ? "Resetting..." : "Delete persona data"}</button></div></form>{requestError && <p role="alert">{requestError}</p>}</section></div>}
   </main>;
 }

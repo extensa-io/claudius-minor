@@ -2,7 +2,8 @@ import { accessError } from "@/lib/access";
 import { getCheckpointer } from "@/lib/checkpointer";
 import { databaseErrorResponse } from "@/lib/database-error";
 import { collections } from "@/lib/db";
-import { resolveCurrentUser } from "@/lib/user";
+import { resolveCurrentUser, UserError } from "@/lib/user";
+import { acquireOperation, OperationError, operationResponse } from "@/lib/operations";
 
 export async function POST(request: Request) {
   const denied = accessError(request);
@@ -14,10 +15,13 @@ export async function POST(request: Request) {
   let user;
   try {
     user = await resolveCurrentUser();
-  } catch {
-    return Response.json({ error: "Choose a persona before resetting." }, { status: 400 });
+  } catch (error) {
+    if (error instanceof UserError) return Response.json({ error: error.message }, { status: 400 });
+    return databaseErrorResponse(error, "resolve reset persona");
   }
+  let release: (() => Promise<void>) | undefined;
   try {
+    release = await acquireOperation(user._id);
     const conversations = await collections.conversations();
     const owned = await conversations.find({ userId: user._id }).toArray();
     const saver = await getCheckpointer();
@@ -27,6 +31,9 @@ export async function POST(request: Request) {
     const removed = await memories.deleteMany({ userId: user._id });
     return Response.json({ conversationsDeleted: deleted.deletedCount, memoriesDeleted: removed.deletedCount });
   } catch (error) {
+    if (error instanceof OperationError) return operationResponse(error);
     return databaseErrorResponse(error, "reset persona");
+  } finally {
+    if (release) await release();
   }
 }

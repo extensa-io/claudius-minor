@@ -28,7 +28,7 @@ select{display:block;width:100%;margin-top:8px;padding:10px;border:1px solid var
 .chat-header-actions>span,.memory-panel>p{font-size:12px;color:var(--muted)}
 .lock-demo,.reset-demo{border:0;background:transparent;color:var(--muted);font-size:12px;padding:6px 8px;border-radius:6px;white-space:nowrap}
 .lock-demo:hover,.reset-demo:hover{background:var(--pale);color:var(--green)}
-.mobile-site-title{display:none}
+.mobile-site-title,.mobile-controls{display:none}
 .messages{flex:1;min-height:0;overflow:auto;padding:24px}
 .messages article{width:100%;margin:0 0 20px;padding:16px 20px;border-radius:12px;line-height:1.65;overflow-wrap:anywhere}
 .messages p{margin:0 0 12px}
@@ -78,4 +78,4 @@ form button,.memory button{border:0;background:var(--green);color:white;border-r
 .reset-actions .confirm-reset{background:#a32d2d;color:white}
 @media(min-width:1600px){.shell{grid-template-columns:230px minmax(0,1fr) 280px}}
 @media(max-width:1100px){.shell{grid-template-columns:190px minmax(0,1fr)}.memory-panel{display:none}.chat-header-actions>span{display:none}}
-@media(max-width:650px){.shell{grid-template-columns:minmax(0,1fr)}.sidebar{display:none}.chat header{padding:12px}.desktop-chat-title{display:none}.mobile-site-title{display:inline}.chat-title{font-size:14px}.messages{padding:12px}.messages article{padding:14px}.chat form{padding:12px}.chat-header-actions{gap:2px}.site-footer{padding:8px;font-size:11px}}
+@media(max-width:650px){.mobile-controls{display:flex;flex-wrap:wrap;gap:8px;padding:12px;border-bottom:1px solid var(--line);align-items:end}.mobile-controls label{flex:1;min-width:120px;font-size:12px;color:var(--muted)}.mobile-controls button{padding:10px;border:0;border-radius:8px;background:var(--pale);color:var(--green)}.mobile-controls select{margin-top:4px}.shell{grid-template-columns:minmax(0,1fr)}.sidebar{display:none}.chat header{padding:12px}.desktop-chat-title{display:none}.mobile-site-title{display:inline}.chat-title{font-size:14px}.messages{padding:12px}.messages article{padding:14px}.chat form{padding:12px}.chat-header-actions{gap:2px}.site-footer{padding:8px;font-size:11px}}

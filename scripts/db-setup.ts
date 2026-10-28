@@ -8,9 +8,10 @@ async function main() {
   try {
     await client.connect();
     const db = client.db(DATABASE_NAME);
-    for (const name of ["users", "conversations", "memories", "checkpoints", "checkpoint_writes"]) {
+    for (const name of ["users", "conversations", "memories", "checkpoints", "checkpoint_writes", "demo_operations", "demo_usage"]) {
       if (!(await db.listCollections({ name }, { nameOnly: true }).hasNext())) await db.createCollection(name);
     }
+    await db.collection("demo_usage").createIndex({ expiresAt: 1 }, { expireAfterSeconds: 0 });
     await db.collection("conversations").createIndex({ userId: 1, updatedAt: -1 }, { name: "userId_updatedAt" });
     await db.collection("memories").createIndex({ userId: 1, status: 1, importance: -1 }, { name: "userId_status_importance" });
     await db.collection("checkpoint_writes").createIndex({ checkpoint_ns: 1, thread_id: 1, checkpoint_id: 1 }, { name: "checkpoint_ns_thread_id_checkpoint_id" });

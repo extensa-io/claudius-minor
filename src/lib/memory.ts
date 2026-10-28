@@ -9,9 +9,8 @@ export type MemoryAction = { action: "skip" } | { action: "supersede"; previous:
 export type MemoryRelation = { previousId: string; relation: "duplicate" | "replacement" | "compatible" };
 
 export function decideMemoryAction(candidate: Candidate, hits: MemoryHit[], relation?: MemoryRelation): MemoryAction {
-  const sameCategory = hits.filter((hit) => hit.category === candidate.category);
-  if (sameCategory.some((hit) => normalize(hit.content) === normalize(candidate.content))) return { action: "skip" };
-  const previous = sameCategory.find((hit) => hit._id.toString() === relation?.previousId);
+  if (hits.some((hit) => normalize(hit.content) === normalize(candidate.content))) return { action: "skip" };
+  const previous = hits.find((hit) => hit._id.toString() === relation?.previousId);
   if (previous && relation?.relation === "duplicate") return { action: "skip" };
   if (previous && relation?.relation === "replacement") return { action: "supersede", previous };
   return { action: "insert" };

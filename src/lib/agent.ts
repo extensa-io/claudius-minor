@@ -5,6 +5,7 @@ import { Annotation, END, MessagesAnnotation, START, StateGraph } from "@langcha
 import { ToolNode, toolsCondition } from "@langchain/langgraph/prebuilt";
 import { ChatOpenAI } from "@langchain/openai";
 import { z } from "zod";
+import { boundedContext } from "@/lib/context";
 import { env, requiredEnv } from "@/lib/env";
 import { webSearch } from "@/lib/search";
 import { memoryNote, SYSTEM_PROMPT } from "@/lib/prompt";
@@ -46,9 +47,9 @@ async function agent(state: typeof State.State) {
   const lastHuman = state.messages.findLastIndex((message) => message.getType() === "human");
   const toolTurns = state.messages.slice(lastHuman + 1).filter((message) => message.getType() === "tool").length;
   // Bound repeated searches and still produce a final answer from completed results.
-  const model = new ChatOpenAI({ model: requiredEnv("CHAT_MODEL"), apiKey: requiredEnv("DO_MODEL_ACCESS_KEY"), configuration: { baseURL: env.DO_INFERENCE_BASE_URL }, temperature: 0, streaming: true }).bindTools(tools, { tool_choice: toolTurns >= 4 ? "none" : "auto" });
+  const model = new ChatOpenAI({ model: requiredEnv("CHAT_MODEL"), apiKey: requiredEnv("DO_MODEL_ACCESS_KEY"), configuration: { baseURL: env.DO_INFERENCE_BASE_URL }, temperature: 0, streaming: true, maxTokens: 1024, maxRetries: 0, timeout: 60_000 }).bindTools(tools, { tool_choice: toolTurns >= 4 ? "none" : "auto" });
   const system = [SYSTEM_PROMPT.replace("{{date}}", new Date().toISOString().slice(0, 10)), state.memoryContext].filter(Boolean).join("\n\n");
-  const response = await model.invoke([new SystemMessage(system), ...state.messages]);
+  const response = await model.invoke([new SystemMessage(system), ...boundedContext(state.messages)]);
   return { messages: [response] };
 }
 

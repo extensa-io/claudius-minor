@@ -47,9 +47,19 @@ Set `APP_ACCESS_CODE` as a runtime **SECRET** on the `web` service before deploy
 
 Enter the code on the homepage to open the demo. The browser keeps it only in React memory and sends it in the `x-access-code` header on every API request, including streaming chat. It never stores the code in a cookie, URL, local storage, or session storage. Reloading the page or clicking **Lock demo** requires entering it again. The existing persona cookie still selects Angela, Betty, or Caroline; it does not grant API access.
 
-Use **Reset persona** to delete every conversation, checkpoint transcript, and memory for the selected persona. Type `RESET` in the confirmation dialog. Other personas stay untouched; reset each one separately for a clean demo. Wait for chat and background extraction to finish before resetting. The reset is irreversible and does not cancel work already running in another tab.
+Use **Reset persona** to delete every conversation, checkpoint transcript, and memory for the selected persona. Type `RESET` in the confirmation dialog. Other personas stay untouched; reset each one separately for a clean demo. The server rejects reset while another chat, extraction, reset, or memory deletion runs. Extraction finishes inside the chat stream before the server releases its shared lock. The reset is irreversible.
 
-Keep the code private and enter it off-screen before presenting. Anyone who knows it can use the shared personas and consume inference and search credits. This gate does not provide rate limits or a spending cap. Rotate the deployment secret and redeploy if it leaks. In-flight requests can still finish after locking or rotating the code.
+Keep the code private and enter it off-screen before presenting. Anyone who knows it can use the shared personas and consume inference and search credits. The backend limits the shared demo to one active mutation, 10 accepted chat attempts per minute, and 200 per UTC day. MongoDB stores the lock and counters across instances and restarts. These request limits are not a monetary spending cap. Rotate the deployment secret and redeploy if it leaks. In-flight requests can still finish after locking or rotating the code.
+
+### Demo safeguards
+
+Set `DEMO_CHAT_ENABLED=false` on the deployment and redeploy to stop new chat requests. Reset and reads remain available. Stop the app entirely for an immediate emergency shutdown. Configure provider quotas or spending controls separately where supported; billing alerts alone do not stop requests.
+
+Each chat input allows 4,000 characters. Inference uses at most 24 recent messages and 24,000 serialized content characters, keeping complete turns rather than orphan tool results. Chat output allows 1,024 tokens per invocation, extraction 2,048, and relation comparison 1,024. Extraction allows at most five candidates per turn. Chat has a 120-second graph deadline and bounded inference retries and timeouts. Full transcripts remain in checkpoints.
+
+The exclusive operation lock deliberately does not expire. A paused worker must not resume writing after another worker resets its data. If a process crashes while holding it, stop **every** app instance, then run `CONFIRM_DEMO_STOPPED=yes pnpm demo:unlock` using that deployment's MongoDB credentials before restarting. Never clear the lock while workers are running. Run `pnpm db:setup` to add the usage-counter TTL index; the lock and counters otherwise work without setup.
+
+Run `pnpm verify:live` with `APP_URL`, `APP_ACCESS_CODE`, and the matching `MONGODB_URI` to check deployment memory extraction, vector indexing, fresh-conversation recall, and supersession lineage. It creates marked synthetic project memories and removes only its own conversations and memories afterward. It uses real inference credits and must run when no presenter chat is active.
 
 For scripted API checks, include `x-access-code` in each request. Do not commit a populated code or use a `NEXT_PUBLIC_` variable.
 

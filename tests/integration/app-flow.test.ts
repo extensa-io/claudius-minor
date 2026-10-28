@@ -1,3 +1,4 @@
+import { randomBytes } from "node:crypto";
 import { spawn } from "node:child_process";
 import { once } from "node:events";
 import { ObjectId } from "mongodb";
@@ -10,7 +11,9 @@ describe.skipIf(!enabled)("application HTTP flow", () => {
   it("streams chat, extracts and recalls memory, isolates personas, and deletes memory", async () => {
     const port = 3197;
     const base = `http://127.0.0.1:${port}`;
-    const server = spawn(process.execPath, ["node_modules/next/dist/bin/next", "start", "-p", String(port)], { stdio: "ignore", env: process.env });
+    const accessCode = randomBytes(24).toString("hex");
+    const accessHeaders = { "x-access-code": accessCode };
+    const server = spawn(process.execPath, ["node_modules/next/dist/bin/next", "start", "-p", String(port)], { stdio: "ignore", env: { ...process.env, APP_ACCESS_CODE: accessCode } });
     const conversationIds: ObjectId[] = [];
     const memoryIds: ObjectId[] = [];
     let userId: ObjectId | undefined;
@@ -22,7 +25,7 @@ describe.skipIf(!enabled)("application HTTP flow", () => {
       }
       throw new Error("Timed out waiting for application state.");
     }
-    const cookie = (id: string) => ({ cookie: `claudius_minor_user=${id}`, "content-type": "application/json" });
+    const cookie = (id: string) => ({ ...accessHeaders, cookie: `claudius_minor_user=${id}`, "content-type": "application/json" });
     async function chat(id: string, message: string, conversationId?: string) {
       const response = await fetch(`${base}/api/chat`, { method: "POST", headers: cookie(id), body: JSON.stringify({ message, conversationId }) });
       expect(response.status).toBe(200);
@@ -38,8 +41,8 @@ describe.skipIf(!enabled)("application HTTP flow", () => {
       return { id: info.data.id as string, answer };
     }
     try {
-      await waitUntil(async () => { try { return (await fetch(`${base}/api/users`)).ok; } catch { return false; } }, 30_000);
-      const users = (await (await fetch(`${base}/api/users`)).json()).users as Array<{ id: string; name: string }>;
+      await waitUntil(async () => { try { return (await fetch(`${base}/api/users`, { headers: accessHeaders })).ok; } catch { return false; } }, 30_000);
+      const users = (await (await fetch(`${base}/api/users`, { headers: accessHeaders })).json()).users as Array<{ id: string; name: string }>;
       expect(users.map((user) => user.name)).toEqual(["Angela", "Betty", "Caroline"]);
       userId = new ObjectId(users[0].id);
       const first = await chat(users[0].id, "Please remember: my favorite hiking trail is Silver Fern Ridge. Reply briefly.");

@@ -4,13 +4,15 @@ import { beforeEach, describe, expect, it, vi } from "vitest";
 const mocks = vi.hoisted(() => ({
   resolveCurrentUser: vi.fn(), find: vi.fn(), deleteConversations: vi.fn(), deleteMemories: vi.fn(), deleteThread: vi.fn(),
 }));
-vi.mock("@/lib/user", () => ({ resolveCurrentUser: mocks.resolveCurrentUser }));
+vi.mock("@/lib/user", () => ({ resolveCurrentUser: mocks.resolveCurrentUser, UserError: class extends Error {} }));
+vi.mock("@/lib/operations", () => ({ acquireOperation: async () => async () => {}, OperationError: class extends Error {}, operationResponse: vi.fn() }));
 vi.mock("@/lib/db", () => ({ collections: {
   conversations: async () => ({ find: mocks.find, deleteMany: mocks.deleteConversations }),
   memories: async () => ({ deleteMany: mocks.deleteMemories }),
 } }));
 vi.mock("@/lib/checkpointer", () => ({ getCheckpointer: async () => ({ deleteThread: mocks.deleteThread }) }));
 
+import { UserError } from "@/lib/user";
 import { POST } from "@/app/api/reset/route";
 
 const userId = new ObjectId();
@@ -47,7 +49,7 @@ describe("reset persona", () => {
   });
 
   it("requires a selected persona", async () => {
-    mocks.resolveCurrentUser.mockRejectedValue(new Error("Choose a persona"));
+    mocks.resolveCurrentUser.mockRejectedValue(new UserError("Choose a persona"));
     expect((await POST(request("RESET"))).status).toBe(400);
     expect(mocks.find).not.toHaveBeenCalled();
   });

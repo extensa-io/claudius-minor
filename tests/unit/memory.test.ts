@@ -9,10 +9,12 @@ describe("memory action", () => {
   it("skips same-category duplicates", () => {
     expect(decideMemoryAction(candidate, [{ _id: new ObjectId(), content: "Prefers TypeScript", category: "preference", score: 0.97 }]).action).toBe("skip");
   });
-  it("requires a confirmed replacement and inserts for unrelated categories", () => {
+  it("requires a confirmed replacement even when extraction changes categories", () => {
     const previous = { _id: new ObjectId(), content: "Uses JavaScript", category: "preference" as const, score: 0.9 };
     expect(decideMemoryAction(candidate, [previous], { previousId: previous._id.toString(), relation: "replacement" }).action).toBe("supersede");
     expect(decideMemoryAction(candidate, [previous]).action).toBe("insert");
+    const changedCategory = { ...previous, category: "context" as const };
+    expect(decideMemoryAction(candidate, [changedCategory], { previousId: previous._id.toString(), relation: "replacement" }).action).toBe("supersede");
     expect(decideMemoryAction(candidate, [{ _id: new ObjectId(), content: "Uses TypeScript", category: "fact", score: 0.99 }]).action).toBe("insert");
   });
   it("does not replace a compatible fact even at high similarity", () => {
