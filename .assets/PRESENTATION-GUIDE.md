@@ -27,7 +27,7 @@ For a PDF, open `/presentation/index.html?print-pdf` directly in Chromium, wait 
 
 ## Edit and maintain
 
-- `public/presentation/index.html` holds 21 slides and presenter notes.
+- `public/presentation/index.html` holds 21 slides and public, attendee-friendly explanatory notes.
 - `public/presentation/theme.css` holds the template layout and typography.
 - `public/presentation/presentation.js` configures Reveal.js.
 - `src/app/slides/page.tsx` provides the public app route.
@@ -54,7 +54,7 @@ The template is not published as a slide background. This avoids accidentally re
 
 ## Timing and badge coverage
 
-Target 58 minutes; reserve two minutes for delays. Notes include the coding and demo time, not just slide narration. Protect the badge CTA at minute 56. Do not add a planned Q&A extension.
+Target 58 minutes; reserve two minutes for delays. The schedule below includes coding and demos. Public slide notes explain concepts and resources, not timing cues, personal reminders, or presenting instructions. Protect the badge CTA at minute 56. Do not add a planned Q&A extension.
 
 | Minutes | Segment |
 |---|---|

@@ -12,7 +12,7 @@ describe("livestream presentation", () => {
     expect(slides[1]).toContain("HELLO, I’M<br>NÉSTOR");
     expect(slides[1]).toContain("Developer advocate at MongoDB");
     expect(slides[1]).toContain("https://www.extensa.io/");
-    expect(slides[1]).not.toContain("https://github.com/extensa-io/claudius-minor");
+    expect(slides[1]).not.toContain('href="https://github.com/extensa-io/claudius-minor"');
     expect(slides[2]).toContain("https://github.com/extensa-io/claudius-minor");
     expect(slides[1]).toContain("<svg");
     expect(slides[1]).not.toContain("<img");
@@ -35,10 +35,14 @@ describe("livestream presentation", () => {
     expect(slides[8]).toContain("https://dev.to/mongodb/an-agent-is-a-graph-43h0");
     expect(slides[9]).toContain("LET’S MEET<br>CLAUDIUS MINOR");
     expect(slides[9]).toContain('href="/"');
-    expect(slides[9]).toContain("10:00–13:00");
+    expect(slides[9]).toContain("The starting application already supports streamed chat");
     for (const slide of slides) expect(slide).toContain('class="notes"');
     for (const index of [2, 5, 7, 11, 15]) expect(slides[index]).toMatch(/<h2>[^<]+<\/h2>/);
-    expect(slides.at(-2)).toContain("56:00–58:00");
+    const notes = [...html.matchAll(/<aside class="notes">([\s\S]*?)<\/aside>/g)].map(([, text]) => text);
+    for (const note of notes) {
+      expect(note).not.toMatch(/\d{2}:\d{2}|Badge Q|INCLUDING live coding|worktree|rehearsed|Keep this|End by|Introduce yourself|Protect the badge/);
+    }
+    expect(slides.at(-2)).toContain("complete the course requirements");
     expect(slides.at(-1)).toContain("THANK YOU");
     expect(html).not.toContain("SCAN TO GET STARTED");
   });

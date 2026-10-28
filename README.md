@@ -76,7 +76,7 @@ The HTML presentation lives in this repository under `public/presentation/` and 
 ### Present
 
 - Use the visible **← / →** buttons, arrow keys, or Space to navigate.
-- Click **Speaker notes (S)** or press `S` to open notes, the upcoming slide, and a timer in a separate window. Allow browser popups.
+- Click **Speaker notes (S)** or press `S` to open attendee-friendly explanations, the upcoming slide, and a timer in a separate window. The public notes expand on the concepts and link to resources; they contain no presenter instructions. Allow browser popups.
 - Press `F` for fullscreen. Click **Hide controls (P)** or press `P` to toggle presenter controls.
 - Share only the audience slide window in StreamYard, not the speaker-notes window.
 - Counters and URL hashes start at 1, including the title. Append `#/3` to the standalone deck URL to open **What we’re building today**.
