@@ -39,6 +39,9 @@ body{margin:0;background:var(--navy)}
 .reveal .columns .column p{position:absolute;top:270px;font-size:18px;line-height:1.45;width:265px}
 .reveal .columns .compact{font-size:48px;padding-top:75px}
 .reveal .recap .compact{font-size:44px}
+.reveal .memory-platform-slide .compact{font-size:42px}
+.reveal .platform-takeaway{position:absolute;left:54px;top:550px;font-size:21px;font-weight:600;color:var(--forest)}
+.reveal .step-detail p.integration-package{font-family:Source Code Pro,monospace;font-size:15px;color:var(--green)}
 .reveal .statement{position:absolute;left:54px;top:164px;width:465px}
 .reveal .statement p{font-size:30px;line-height:1.05}
 .reveal .statement .emphasis{font-weight:600;margin-top:58px}

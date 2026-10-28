@@ -23,7 +23,7 @@ describe("livestream presentation", () => {
     expect(slides[2]).toContain("dev.to/mongodb/im-building-my-own-claude-based-chatbot-powered-by-mongodb-42j8");
     expect(slides[3]).toContain("OPEN-WEIGHT MODELS");
     expect(slides[3]).toContain("gpt-oss-120b");
-    expect(slides[3]).toContain("One model: gpt-oss-120b");
+    expect(slides[3]).toContain("Generative model: gpt-oss-120b");
     expect(html).not.toContain("gpt-oss-20b");
     expect(slides[3]).toContain("DigitalOcean Serverless Inference");
     expect(slides[5]).toContain("Non-deterministic Workflow");
@@ -36,6 +36,10 @@ describe("livestream presentation", () => {
     expect(slides[9]).toContain("LET’S MEET<br>CLAUDIUS MINOR");
     expect(slides[9]).toContain('href="/"');
     expect(slides[9]).toContain("The starting application already supports streamed chat");
+    expect(slides[10]).toContain("MONGODB MEMORY, POWERED BY VOYAGE AI");
+    expect(slides[10]).toContain("Atlas Automated Embedding");
+    expect(slides[10]).toContain("No embedding SDK in this app");
+    expect(slides[12]).toContain("@langchain/langgraph-checkpoint-mongodb");
     for (const slide of slides) expect(slide).toContain('class="notes"');
     for (const index of [2, 5, 7, 11, 15]) expect(slides[index]).toMatch(/<h2>[^<]+<\/h2>/);
     const notes = [...html.matchAll(/<aside class="notes">([\s\S]*?)<\/aside>/g)].map(([, text]) => text);

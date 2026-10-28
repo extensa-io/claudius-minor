@@ -56,9 +56,9 @@
 
 <section class="dark columns three stack-slide" data-template="31" data-background-color="#001e2b">
   <h2>THE STACK: OPEN-WEIGHT MODELS, DURABLE DATA</h2>
-  <div class="column"><span class="number compact">MODEL</span><h3>Open weights, hosted inference</h3><p>One model: gpt-oss-120b.<br>Chat and memory extraction.<br>DigitalOcean Serverless Inference.</p></div>
+  <div class="column"><span class="number compact">MODEL</span><h3>Open weights, hosted inference</h3><p>Generative model: gpt-oss-120b.<br>Chat and memory extraction.<br>DigitalOcean Serverless Inference.</p></div>
   <div class="column"><span class="number compact">APP</span><h3>UI, graph, and tools</h3><p>Next.js + React + TypeScript.<br>LangGraph orchestrates the agent.<br>Tavily supplies web search.</p></div>
-  <div class="column"><span class="number compact">DATA</span><h3>MongoDB Atlas</h3><p>Documents + MongoDBSaver.<br>Atlas Vector Search.<br>Automated Embedding: voyage-4.</p></div>
+  <div class="column"><span class="number compact">DATA</span><h3>MongoDB Atlas + Voyage AI</h3><p>Voyage AI voyage-4 embeddings.<br>Atlas Automated Embedding.<br>LangGraph MongoDBSaver.</p></div>
   <aside class="notes">The application uses gpt-oss-120b for both chat and memory extraction through DigitalOcean Serverless Inference. CHAT_MODEL and EXTRACTION_MODEL select the same model; their separate names describe responsibilities. Open weights means model weights are available, not that inference is free or that all training data is public. Next.js, React, and TypeScript provide the application; LangGraph coordinates the agent; Tavily provides web search. MongoDB Atlas stores application data and checkpoints. Atlas Automated Embedding uses Voyage voyage-4 for semantic retrieval, separately from the generative model.</aside>
 </section>
 
@@ -121,12 +121,13 @@
   <aside class="notes">The starting application already supports streamed chat and web search. Its sidebar lists conversation headers, while the open thread displays graph-state messages. Search activity and source links expose the tool's work. At the start checkpoint, graph state resides in MemorySaver, so restarting the server loses it; long-term memory loading and persistence are not implemented yet. The completed deployed application includes the later steps.</aside>
 </section>
 
-<section class="light columns three" data-template="38" data-background-color="#fdfff5">
-  <h2>ONE DATABASE, SEVERAL RESPONSIBILITIES</h2>
-  <div class="column"><span class="number compact">STATE</span><h3>Durable conversations</h3><p>MongoDBSaver stores<br>LangGraph checkpoints.<br>A stable thread ID restores state.</p></div>
-  <div class="column"><span class="number compact">FACTS</span><h3>Personal memory</h3><p>Documents hold facts, owners,<br>importance, and lineage.<br>Normal queries load a profile.</p></div>
-  <div class="column"><span class="number compact">RECALL</span><h3>Semantic retrieval</h3><p>Atlas Automated Embedding<br>uses Voyage voyage-4.<br>Vector Search finds relevant facts.</p></div>
-  <aside class="notes">MongoDB supplies the application's data backend: users, conversation headers, graph checkpoints, memory documents, and the memory vector index. Normal document queries retrieve profile facts, while Atlas Vector Search retrieves semantically relevant facts. Automated Embedding removes application-managed embedding calls. DigitalOcean inference and Tavily search remain external services; one data backend does not mean one service for every responsibility.</aside>
+<section class="light columns three memory-platform-slide" data-template="38" data-background-color="#fdfff5">
+  <h2>MONGODB MEMORY, POWERED BY VOYAGE AI</h2>
+  <div class="column"><span class="number compact">INTEGRATE</span><h3>LangChain + LangGraph</h3><p>MongoDBSaver persists graph state.<br>Use the MongoDB checkpoint<br>integration, not a second transcript.</p></div>
+  <div class="column"><span class="number compact">AUTO-EMBED</span><h3>Atlas Automated Embedding</h3><p>Store text. Query with text.<br>Atlas handles the embedding work.<br>No embedding SDK in this app.</p></div>
+  <div class="column"><span class="number compact">VOYAGE AI</span><h3>voyage-4 + Vector Search</h3><p>Voyage AI turns text into vectors.<br>Atlas retrieves by meaning.<br>Owner filters keep recall personal.</p></div>
+  <p class="platform-takeaway">Your app manages memories. Atlas manages their embeddings.</p>
+  <aside class="notes">MongoDB supplies the application's data backend: users, conversation headers, graph checkpoints, memory documents, and the memory vector index. Normal document queries retrieve profile facts, while Atlas Vector Search retrieves semantically relevant facts. Atlas Automated Embedding uses Voyage AI voyage-4 to embed indexed memory text and text queries. The app supplies an autoEmbed index definition and sends query text, without an embedding SDK or application-managed vector generation. MongoDBSaver comes from @langchain/langgraph-checkpoint-mongodb and persists graph state. Long-term memory documents and vector queries in this app use the MongoDB Node.js driver directly, not a LangChain vector-store wrapper. DigitalOcean inference and Tavily search remain external services; one data backend does not mean one service for every responsibility.</aside>
 </section>
 
 <section class="light memory-slide" data-template="29" data-background-color="#fdfff5">
@@ -138,13 +139,13 @@
 
 <section class="dark step-slide" data-template="85" data-background-color="#001e2b">
   <span class="chapter">01</span><h2>DURABLE<br>CHAT<br>STATE</h2>
-  <div class="step-detail"><h3>Keep the same thread ID</h3><pre><code class="language-typescript">new MongoDBSaver({
+  <div class="step-detail"><h3>LangGraph’s MongoDB integration</h3><pre><code class="language-typescript">new MongoDBSaver({
   client: await getClient(),
   dbName: DATABASE_NAME,
 });
 
-builder.compile({ checkpointer });</code></pre><p>Restart the app.<br>Restore the conversation.</p></div>
-  <aside class="notes">Step 1 replaces the in-process MemorySaver with MongoDBSaver. A stable thread_id identifies the conversation across requests and server restarts. MongoDBSaver owns the checkpoint storage format; the application does not maintain a second authoritative transcript. Conversation ownership must be verified before returning checkpoint-derived messages. Relevant file: src/lib/checkpointer.ts. Restarting the server and reopening the same thread demonstrates durable state.</aside>
+builder.compile({ checkpointer });</code></pre><p>MongoDBSaver stores checkpoints.<br>Restart. Restore the same thread.</p><p class="integration-package">@langchain/langgraph-checkpoint-mongodb</p></div>
+  <aside class="notes">Step 1 replaces the in-process MemorySaver with MongoDBSaver from @langchain/langgraph-checkpoint-mongodb, the LangGraph MongoDB checkpoint integration in the LangChain ecosystem. A stable thread_id identifies the conversation across requests and server restarts. MongoDBSaver owns the checkpoint storage format; the application does not maintain a second authoritative transcript. Conversation ownership must be verified before returning checkpoint-derived messages. Relevant file: src/lib/checkpointer.ts. Restarting the server and reopening the same thread demonstrates durable state.</aside>
 </section>
 
 <section class="dark step-slide" data-template="85" data-background-color="#001e2b">
@@ -159,7 +160,7 @@ builder.compile({ checkpointer });</code></pre><p>Restart the app.<br>Restore th
 
 <section class="dark step-slide" data-template="85" data-background-color="#001e2b">
   <span class="chapter">03</span><h2>RECALL<br>PERSONAL<br>CONTEXT</h2>
-  <div class="step-detail"><h3>Filter inside the query</h3><pre><code class="language-typescript">$vectorSearch: {
+  <div class="step-detail"><h3>Query text, not hand-built vectors</h3><pre><code class="language-typescript">$vectorSearch: {
   index: "memories_vector",
   path: "content",
   query: { text: human },
@@ -170,7 +171,7 @@ builder.compile({ checkpointer });</code></pre><p>Restart the app.<br>Restore th
     status: { $eq: "active" },
   },
 }</code></pre></div>
-  <aside class="notes">Step 3 uses semantic retrieval to find relevant user memories, including when the query uses different words. Atlas Automated Embedding processes indexed content and search text. The vector query pre-filters by userId and active status inside the search operation. The current recall score floor of 0.65 is an application heuristic, not a universal relevance threshold. Embedding and indexing are asynchronous, so newly stored text may not be immediately searchable. Relevant file: src/lib/agent.ts.</aside>
+  <aside class="notes">Step 3 uses semantic retrieval to find relevant user memories, including when the query uses different words. Atlas Automated Embedding uses Voyage AI voyage-4 to process indexed memory content and search text. The query supplies text directly: Atlas handles vector generation, so this app needs no embedding SDK. The autoEmbed field in the index selects voyage-4, while the query selects the index and applies owner filters. The vector query pre-filters by userId and active status inside the search operation. The current recall score floor of 0.65 is an application heuristic, not a universal relevance threshold. Embedding and indexing are asynchronous, so newly stored text may not be immediately searchable. Relevant file: src/lib/agent.ts.</aside>
 </section>
 
 <section class="light memory-slide" data-template="29" data-background-color="#fdfff5">
