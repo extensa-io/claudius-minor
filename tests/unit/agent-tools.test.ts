@@ -25,7 +25,7 @@ vi.mock("@langchain/openai", () => ({
   },
 }));
 
-const toolsEnabled = false;
+const toolsEnabled = true;
 
 beforeEach(() => {
   vi.clearAllMocks();

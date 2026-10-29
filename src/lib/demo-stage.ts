@@ -1,4 +1,4 @@
 export const DEMO_STAGE = {
-  tag: "start",
-  label: "No tools · transient chat",
+  tag: "step-1",
+  label: "Web-search tools",
 } as const;

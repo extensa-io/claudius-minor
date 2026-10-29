@@ -1,4 +1,5 @@
 import { HumanMessage, SystemMessage } from "@langchain/core/messages";
+import { tool } from "@langchain/core/tools";
 import {
   Annotation,
   END,
@@ -7,12 +8,28 @@ import {
   START,
   StateGraph,
 } from "@langchain/langgraph";
+import { ToolNode, toolsCondition } from "@langchain/langgraph/prebuilt";
 import { ChatOpenAI } from "@langchain/openai";
+import { z } from "zod";
 import { boundedContext } from "@/lib/context";
 import { env, requiredEnv } from "@/lib/env";
+import { webSearch } from "@/lib/search";
 import { memoryNote, SYSTEM_PROMPT } from "@/lib/prompt";
 import { type RetrievedMemory } from "@/lib/memory";
 
+const webSearchTool = tool(
+  async ({ query }) => JSON.stringify(await webSearch(query)),
+  {
+    name: "web_search",
+    description:
+      "Search the web for current evidence. " +
+      "Include today's date and the relevant year for time-sensitive questions. " +
+      "Returns titles, URLs, and snippets; " +
+      "cite only these exact URLs with Markdown links.",
+    schema: z.object({ query: z.string() }),
+  },
+);
+const tools = [webSearchTool];
 const State = Annotation.Root({
   ...MessagesAnnotation.spec,
   memoryContext: Annotation<string>({
@@ -31,7 +48,13 @@ async function loadContext() {
 }
 
 async function agent(state: typeof State.State) {
-  // TODO step 1: bind web search and route tool results back to the agent.
+  const lastHuman = state.messages.findLastIndex(
+    (message) => message.getType() === "human",
+  );
+  const toolTurns = state.messages
+    .slice(lastHuman + 1)
+    .filter((message) => message.getType() === "tool").length;
+  // Bound repeated searches and still produce a final answer from completed results.
   const model = new ChatOpenAI({
     model: requiredEnv("CHAT_MODEL"),
     apiKey: requiredEnv("DO_MODEL_ACCESS_KEY"),
@@ -41,7 +64,7 @@ async function agent(state: typeof State.State) {
     maxTokens: 1024,
     maxRetries: 0,
     timeout: 60_000,
-  });
+  }).bindTools(tools, { tool_choice: toolTurns >= 4 ? "none" : "auto" });
   const system = [
     SYSTEM_PROMPT.replace("{{date}}", new Date().toISOString().slice(0, 10)),
     state.memoryContext,
@@ -58,9 +81,11 @@ async function agent(state: typeof State.State) {
 const builder = new StateGraph(State)
   .addNode("load_context", loadContext)
   .addNode("agent", agent)
+  .addNode("tools", new ToolNode(tools))
   .addEdge(START, "load_context")
   .addEdge("load_context", "agent")
-  .addEdge("agent", END);
+  .addConditionalEdges("agent", toolsCondition, ["tools", END])
+  .addEdge("tools", "agent");
 
 let graphPromise: Promise<ReturnType<typeof builder.compile>> | undefined;
 export async function getChatGraph() {
