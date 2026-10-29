@@ -1,4 +1,5 @@
 import { ObjectId } from "mongodb";
+import { collections } from "@/lib/db";
 import type { Candidate } from "@/lib/schemas";
 
 export async function persistCandidate(
@@ -6,8 +7,15 @@ export async function persistCandidate(
   userId: ObjectId,
   conversationId: ObjectId,
 ): Promise<void> {
-  // TODO step 3: store extracted memories with owner and source metadata.
-  void candidate;
-  void userId;
-  void conversationId;
+  const memories = await collections.memories();
+  // TODO step 4: compare existing facts before inserting or superseding.
+  await memories.insertOne({
+    userId,
+    content: candidate.content,
+    category: candidate.category,
+    importance: candidate.importance,
+    sourceConversationId: conversationId,
+    createdAt: new Date(),
+    status: "active",
+  });
 }

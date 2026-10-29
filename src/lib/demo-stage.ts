@@ -1,4 +1,4 @@
 export const DEMO_STAGE = {
-  tag: "step-2",
-  label: "Durable conversations",
+  tag: "step-3",
+  label: "Memory extraction",
 } as const;
