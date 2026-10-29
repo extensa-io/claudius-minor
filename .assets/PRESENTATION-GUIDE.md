@@ -10,9 +10,9 @@ Open `/slides` on the local app or deployment. It redirects to `/presentation/in
 - Home and End jump to the beginning and end; Escape opens the overview.
 - **Speaker notes (S)** opens explanatory notes, upcoming slide, and timer. Allow popups.
 - `F` toggles fullscreen; `P` toggles the visible controls.
-- URL hashes and visible counters use 1-based numbering. `#/8` opens the data model, `#/9` the graph, `#/10` the demo introduction, and `#/13` the first checkpoint.
+- URL hashes and visible counters use 1-based numbering. `#/8` opens the data model, `#/9` the graph, `#/10` the demo introduction, and `#/11` the tools checkpoint. `#/14` opens durable conversations.
 
-The deck contains 21 slides. Notes are public learning material, not a presenter script: keep them free of personal reminders, timing cues, rehearsal instructions, and assessment answers.
+The deck contains 22 slides. Notes are public learning material, not a presenter script: keep them free of personal reminders, timing cues, rehearsal instructions, and assessment answers.
 
 ## Standalone serving and PDF
 
@@ -64,16 +64,16 @@ Primary attendee link: https://mdb.link/hacktoberfest-2026-badge. The supplied Q
 
 | Reference questions | Slides | Concepts |
 |---|---|---|
-| 1 | 5, 19 | Reasoning, tools, memory |
-| 2 | 6, 19 | Adaptive multi-step tasks versus fixed validation |
-| 3 | 7, 19 | Plan tasks, data, and tools |
-| 4 | 7, 9, 19 | Tools as callable external-interaction functions |
-| 5 | 7, 11, 16, 19 | APIs, database queries, and vector retrieval |
-| 6 | 5, 9, 19 | LLM selects actions; code executes |
-| 7 | 9, 19 | Cyclical graph and tool-result loop |
-| 8 | 12, 16, 18, 19 | Cross-thread personalization, not retraining |
-| 9 | 12, 13, 19 | Earlier discussion within a session |
-| 10 | 12, 13, 19 | Ordered session turns and thread-keyed checkpoints |
+| 1 | 5, 20 | Reasoning, tools, memory |
+| 2 | 6, 20 | Adaptive multi-step tasks versus fixed validation |
+| 3 | 7, 20 | Plan tasks, data, and tools |
+| 4 | 7, 9, 11, 20 | Tools as callable external-interaction functions |
+| 5 | 7, 12, 17, 20 | APIs, database queries, and vector retrieval |
+| 6 | 5, 9, 11, 20 | LLM selects actions; code executes |
+| 7 | 9, 11, 20 | Cyclical graph and tool-result loop |
+| 8 | 13, 17, 19, 20 | Cross-thread personalization, not retraining |
+| 9 | 13, 14, 20 | Earlier discussion within a session |
+| 10 | 13, 14, 20 | Ordered session turns and thread-keyed checkpoints |
 
 Teach concepts rather than reproducing assessment questions or an answer key. Attendance alone does not guarantee completion or a pass.
 
@@ -82,10 +82,11 @@ Teach concepts rather than reproducing assessment questions or an answer key. At
 - Slide 3 draws from [the Claudius introduction](https://dev.to/mongodb/im-building-my-own-claude-based-chatbot-powered-by-mongodb-42j8). The article's planned phases are not proof of completed features.
 - Slide 4 describes gpt-oss-120b for both chat and extraction through DigitalOcean. Open weights does not imply free inference, public training data, or local execution. Voyage voyage-4 serves the separate embedding role.
 - Slides 8 and 9 link to the [data model](https://dev.to/mongodb/no-messages-table-the-data-model-behind-my-own-claude-based-chatbot-54jp) and [graph](https://dev.to/mongodb/an-agent-is-a-graph-43h0) articles. Minor does not inherit all of Claudius's collections or Bedrock model switching.
-- Only `web_search` is model-callable. Memory queries run automatically in a graph node.
+- `start` has no model-callable tools, tool execution node, or search instruction. Its agent routes directly to END. Step 1 adds `web_search`, model binding, and the tool-result loop. Memory queries remain automatic graph work, not model-callable tools.
+- Slide 9 shows the target graph. Slides 10–11 contrast parametric knowledge with live evidence. Wrong answers are possible, not guaranteed; search results also require verification.
 - Short-term memory describes thread scope, not storage lifetime. MongoDBSaver restores graph state using `thread_id`, not a custom messages-table query.
-- `start` uses in-process MemorySaver; Step 1 introduces MongoDBSaver.
-- Step 4 restores the completed app's recent-write checks and LLM relation comparison. Similarity is not proof of contradiction, and lineage updates are not atomic. The rebuilt `step-4` and `final` trees match the reference `main` commit.
+- `start` and Step 1 use in-process MemorySaver; Step 2 introduces MongoDBSaver.
+- Step 5 restores the completed app's recent-write checks and LLM relation comparison. Similarity is not proof of contradiction, and lineage updates are not atomic. The rebuilt `step-5` and `final` trees match the reference `main` commit.
 - Profile retrieval can work before vector indexing catches up. Persistence alone does not demonstrate semantic recall.
 
 ## Verify a deck change

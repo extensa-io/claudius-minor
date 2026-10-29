@@ -77,7 +77,7 @@ Personas, collections, and indexes are preserved. No `pnpm db:setup` is needed a
 
 ## Livestream slides
 
-The HTML presentation lives in this repository under `public/presentation/` and is hosted alongside the app in the same deployment. No separate slide hosting service is needed. The 21-slide deck follows the four coding steps, includes the skill badge QR code, and closes with a Thank You slide.
+The HTML presentation lives in this repository under `public/presentation/` and is hosted alongside the app in the same deployment. No separate slide hosting service is needed. The 22-slide deck follows the five coding steps, includes the skill badge QR code, and closes with a Thank You slide.
 
 ### Open the slides
 
@@ -105,7 +105,7 @@ See [PRESENTATION-GUIDE.md](.assets/PRESENTATION-GUIDE.md) for deck maintenance,
 
 See [LIVESTREAM-GUIDE.md](.assets/LIVESTREAM-GUIDE.md) for the event runbook: isolated local setup, service preflight, prepared checkpoint commands, demos, timing, and recovery. The walkthrough shows a diff, loads the next tag, and demonstrates its behavior; it requires no live typing or deployment between steps.
 
-The rebuilt tags `start`, `step-1`, `step-2`, `step-3`, `step-4`, and `final` retain the completed app's UI, scripts, credential validation, and safeguards. Each step restores one lesson capability. `step-4` and `final` match the reference `main` file tree.
+The rebuilt tags `start`, `step-1`, `step-2`, `step-3`, `step-4`, `step-5`, and `final` retain the completed app's UI, scripts, credential validation, and safeguards. `start` has streamed chat but no tools or live web access. Step 1 adds web search; Steps 2–5 add durable state, extraction, recall, and supersession. `step-5` and `final` match the reference `main` file tree. The introduction contrasts learned model knowledge with current evidence; a wrong answer is possible, not guaranteed. Rehearse and verify sources before the event.
 
 ## Known limitations
 

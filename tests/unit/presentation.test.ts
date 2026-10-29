@@ -7,8 +7,8 @@ const html = readFileSync(resolve(root, "index.html"), "utf8");
 const slides = [...html.matchAll(/<section\b[^>]*>[\s\S]*?<\/section>/g)].map(([section]) => section);
 
 describe("livestream presentation", () => {
-  it("keeps 21 slides, a native introduction second, and notes on every slide", () => {
-    expect(slides).toHaveLength(21);
+  it("keeps 22 slides, a native introduction second, and notes on every slide", () => {
+    expect(slides).toHaveLength(22);
     expect(slides[1]).toContain("HELLO, I’M<br>NÉSTOR");
     expect(slides[1]).toContain("Developer advocate at MongoDB");
     expect(slides[1]).toContain("https://www.extensa.io/");
@@ -35,19 +35,27 @@ describe("livestream presentation", () => {
     expect(slides[8]).toContain("https://dev.to/mongodb/an-agent-is-a-graph-43h0");
     expect(slides[9]).toContain("LET’S MEET<br>CLAUDIUS MINOR");
     expect(slides[9]).toContain('href="/"');
-    expect(slides[9]).toContain("The starting application already supports streamed chat");
-    expect(slides[10]).toContain("MONGODB MEMORY, POWERED BY VOYAGE AI");
-    expect(slides[10]).toContain("Atlas Automated Embedding");
-    expect(slides[10]).toContain("without an embedding SDK");
-    expect(slides[11]).toContain('class="memory-comparison"');
-    expect(slides[11]).toContain("Restore thread context");
-    expect(slides[11]).toContain("Recall personal context");
-    expect(slides[15]).toContain('class="memory-comparison"');
-    expect(slides[15]).toContain("Load the user’s profile");
-    expect(slides[15]).toContain("Retrieve by meaning");
-    expect(slides[12]).toContain("@langchain/langgraph-checkpoint-mongodb");
+    expect(slides[9]).toContain("has no tools or web-search capability");
+    expect(slides[9]).toContain("an incorrect answer is not guaranteed");
+    expect(slides[10]).toContain("GIVE THE<br>AGENT<br>TOOLS");
+    expect(slides[10]).toContain("bindTools");
+    expect(slides[10]).toContain("ToolNode");
+    expect(slides[10]).toContain("toolsCondition");
+    expect(slides[11]).toContain("MONGODB MEMORY, POWERED BY VOYAGE AI");
+    expect(slides[11]).toContain("Atlas Automated Embedding");
+    expect(slides[11]).toContain("without an embedding SDK");
+    expect(slides[12]).toContain('class="memory-comparison"');
+    expect(slides[12]).toContain("Restore thread context");
+    expect(slides[12]).toContain("Recall personal context");
+    expect(slides[16]).toContain('class="memory-comparison"');
+    expect(slides[16]).toContain("Load the user’s profile");
+    expect(slides[16]).toContain("Retrieve by meaning");
+    expect(slides[13]).toContain("@langchain/langgraph-checkpoint-mongodb");
+    for (const [index, chapter] of [[10, "01"], [13, "02"], [14, "03"], [15, "04"], [17, "05"]] as const) {
+      expect(slides[index]).toContain(`<span class="chapter">${chapter}</span>`);
+    }
     for (const slide of slides) expect(slide).toContain('class="notes"');
-    for (const index of [2, 5, 7, 11, 15]) expect(slides[index]).toMatch(/<h2>[^<]+<\/h2>/);
+    for (const index of [2, 5, 7, 12, 16]) expect(slides[index]).toMatch(/<h2>[^<]+<\/h2>/);
     const notes = [...html.matchAll(/<aside class="notes">([\s\S]*?)<\/aside>/g)].map(([, text]) => text);
     for (const note of notes) {
       expect(note).not.toMatch(/\d{2}:\d{2}|Badge Q|INCLUDING live coding|worktree|rehearsed|Keep this|End by|Introduce yourself|Protect the badge/);

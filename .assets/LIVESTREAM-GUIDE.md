@@ -11,7 +11,7 @@ For slide controls, source files, PDF export, and badge coverage, see [PRESENTAT
 | [Completed DigitalOcean app](https://claudius-minor-opf4x.ondigitalocean.app) | Finished-app showcase and fallback |
 | [Hosted slides](https://claudius-minor-opf4x.ondigitalocean.app/slides) | Audience presentation, independent of local tag switches |
 | Separate local worktree | Load and demonstrate the prepared checkpoints |
-| Separate Atlas cluster | Isolate local walkthrough data from the hosted app |
+| Demo Atlas cluster | Shared disposable data with the hosted app, or a separate cluster for isolation |
 
 The slide links open the completed hosted app. Use a pre-opened localhost tab for the starting-state walkthrough. DigitalOcean still serves inference when Next.js runs locally; the model does not run on the laptop.
 
@@ -19,14 +19,15 @@ The slide links open the completed hosted app. Use a pre-opened localhost tab fo
 
 | Tag | Behavior added |
 |---|---|
-| `start` | Chat and web search; MemorySaver holds state in process memory; personal memory remains TODOs |
-| `step-1` | MongoDBSaver makes graph state durable |
-| `step-2` | Extraction reads new conversation text and inserts memories |
-| `step-3` | Owner-filtered profile and vector recall supply prompt context |
-| `step-4` | Duplicate decisions and supersession lineage replace insert-only persistence |
-| `final` | Completed reference app snapshot, not a fifth lesson |
+| `start` | Streamed chat with no tools; MemorySaver holds state in process memory; personal memory remains TODOs |
+| `step-1` | Web-search tool binding, execution, and the tool-result loop |
+| `step-2` | MongoDBSaver makes graph state durable |
+| `step-3` | Extraction reads new conversation text and inserts memories |
+| `step-4` | Owner-filtered profile and vector recall supply prompt context |
+| `step-5` | Duplicate decisions and supersession lineage replace insert-only persistence |
+| `final` | Completed reference app snapshot, not a sixth lesson |
 
-The rebuilt checkpoints use the current app's UI, dependencies, credential validation, scripts, and safeguards throughout. Only the four lesson capabilities are withheld at `start`. Step 4 restores the reference app's recent-write checks and structured memory-relation comparison. The checkpoints include the latest slides, lock-aware `db:reset`, and access-code validation with no minimum length. Use the hosted slides during the event so tag switching cannot interrupt the presentation. `step-4`, `final`, and the reference `main` commit have identical file trees. Lineage writes are not an atomic multi-document transaction.
+The rebuilt checkpoints use the current app's UI, dependencies, credential validation, scripts, and safeguards throughout. All five lesson capabilities are withheld at `start`. Step 5 restores the reference app's recent-write checks and structured memory-relation comparison. The checkpoints include the latest slides, lock-aware `db:reset`, and access-code validation with no minimum length. Use the hosted slides during the event so tag switching cannot interrupt the presentation. `step-5`, `final`, and the reference `main` commit have identical file trees. Lineage writes are not an atomic multi-document transaction.
 
 ## Prepare the local worktree
 
@@ -57,7 +58,7 @@ If you already deleted the folder using the file browser, or `pnpm` reports `ENO
 ```bash
 cd /Users/nestor.daza/Massive/Repos/claudius-minor
 git worktree prune
-git fetch origin --tags
+git fetch origin --tags --force
 git worktree list
 ```
 
@@ -68,7 +69,7 @@ If the live worktree is absent, recreate it using the next section. If it alread
 From the existing repository, after confirming the live worktree is absent:
 
 ```bash
-git fetch origin --tags
+git fetch origin --tags --force
 git worktree add ../claudius-minor-live start
 cd /Users/nestor.daza/Massive/Repos/claudius-minor-live
 pnpm install --frozen-lockfile
@@ -81,11 +82,12 @@ Choose another path if this worktree already exists. Detached HEAD is intentiona
 Inspect the actual transitions before rehearsal:
 
 ```bash
-git show -s --format='%h %s' start step-1 step-2 step-3 step-4 final
+git show -s --format='%h %s' start step-1 step-2 step-3 step-4 step-5 final
 git diff --stat start..step-1
 git diff --stat step-1..step-2
 git diff --stat step-2..step-3
 git diff --stat step-3..step-4
+git diff --stat step-4..step-5
 ```
 
 ### Credentials and database isolation
@@ -139,7 +141,7 @@ Skipped tests do not verify a service. Unit tests do not prove provider behavior
 
 ## Event schedule
 
-This is the authoritative schedule. The 21-slide deck uses 1-based numbering, including the title. Public slide notes explain concepts and resources; they contain no presenter instructions.
+This is the authoritative schedule. The 22-slide deck uses 1-based numbering, including the title. Public slide notes explain concepts and resources; they contain no presenter instructions.
 
 | Minutes | Slides and activity |
 |---|---|
@@ -148,16 +150,17 @@ This is the authoritative schedule. The 21-slide deck uses 1-based numbering, in
 | 5–8 | 5–7, reasoning, tools, memory, and planning |
 | 8–10 | 8–9, access-pattern modeling and graph architecture |
 | 10–13 | 10, starting-app demo |
-| 13–16 | 11–12, data backend and memory scopes |
-| 16–23 | 13, Step 1 and restart demonstration |
-| 23–30 | 14, Step 2 and extraction demonstration |
-| 30–37 | 15–16, Step 3 and owner-filtered recall |
-| 37–44 | 17, Step 4 and supersession |
-| 44–51 | 18, end-to-end proof |
+| 13–18 | 11, Step 1, tools and current-evidence demonstration |
+| 18–21 | 12–13, data backend and memory scopes |
+| 21–27 | 14, Step 2 and restart demonstration |
+| 27–33 | 15, Step 3 and extraction demonstration |
+| 33–39 | 16–17, Step 4 and owner-filtered recall |
+| 39–45 | 18, Step 5 and supersession |
+| 45–51 | 19, end-to-end proof |
 | 51–54 | Flexible buffer; discuss caveats with the relevant demos |
-| 54–56 | 19, concept recap |
-| 56–58 | 20, badge CTA |
-| 58 | 21, brief Thank You sign-off |
+| 54–56 | 20, concept recap |
+| 56–58 | 21, badge CTA |
+| 58 | 22, brief Thank You sign-off |
 
 Keep the event below 60 minutes. Protect the badge CTA rather than extending the coding segments or adding an unbounded Q&A.
 
@@ -196,7 +199,7 @@ At each step:
 git status --short
 ```
 
-Do not force a switch or reset away unexpected edits. `git switch --detach` replaces tracked files with the prepared snapshot. It does not deploy anything or reset Atlas data. The untracked `.env` and ignored dependencies remain in place. Dependency files do not change between these `start` and `step-4` tags, so installation is not needed at every transition.
+Do not force a switch or reset away unexpected edits. `git switch --detach` replaces tracked files with the prepared snapshot. It does not deploy anything or reset Atlas data. The untracked `.env` and ignored dependencies remain in place. Dependency files do not change between these `start` and `step-5` tags, so installation is not needed at every transition.
 
 ### Starting-app demonstration
 
@@ -204,19 +207,21 @@ Do not force a switch or reset away unexpected edits. `git switch --detach` repl
 pnpm dev
 ```
 
-At localhost, select Angela, send a greeting, and request current information to trigger web search. Show streamed text, inspect search sources, and point out the conversation list and empty memory panel.
+At localhost on `start`, select Angela and ask a stable knowledge question, such as `Why does the Moon have phases?` Show streamed text and the empty memory panel. Then ask one rehearsed current-event question. There is no web-search tool, no search activity, and no live evidence. Compare the answer against a trusted source prepared privately during rehearsal. It may be stale, wrong, or honestly uncertain; do not promise a hallucination or demand one.
+
+Choose a recent, settled fact shortly before the event, for example the winner of a sporting final held last weekend or a product version released this week. Ask for the event date and source links. Verify the expected answer and retain the source URL and date in private rehearsal notes. Avoid ambiguous questions, future events, and volatile counts. If the model knows the answer by chance, it still cannot verify the fact with a live tool. Never present invented source links as evidence.
 
 Connect this to slides 8 and 9: the sidebar reads conversation headers; the current thread reads graph-state messages. The browser sends new text and a conversation ID, not an authoritative transcript. MemorySaver does not survive a restart yet.
 
-### Step 1, durable conversations
+### Step 1, introduce tools
 
 Display:
 
 ```bash
-git difftool start step-1 -- src/lib/agent.ts
+git difftool start step-1 -- src/lib/agent.ts src/lib/prompt.ts
 ```
 
-Close the diff tab when finished. Explain the existing MongoDBSaver accessor and stable `thread_id`. Stop the server, then:
+Explain the tool schema, model binding, conditional routing, ToolNode execution, result loop, and four-result search bound. Stop the server, then:
 
 ```bash
 git status --short
@@ -226,17 +231,17 @@ pnpm test
 pnpm dev
 ```
 
-Create a new conversation after loading Step 1. Send a message, restart the server, and reopen it. Earlier MemorySaver messages do not automatically migrate to MongoDBSaver. The application must verify conversation ownership before returning checkpoint-derived history.
+Refresh localhost and start a fresh conversation. Repeat the same current-event question without pasting the answer or earlier output. Show the search indicator, returned source links, and answer. Inspect the sources against the privately verified event date and fact. Tool execution does not prove accuracy; sources can be weak or stale. The model may choose not to search, so rehearse a clear request to search for current evidence. If search fails, label the failure and follow the recovery policy. Restarting discarded the previous in-process transcript; no state migration occurs yet.
 
-### Step 2, personal-memory extraction
+### Step 2, durable conversations
 
 Display:
 
 ```bash
-git difftool step-1 step-2
+git difftool step-1 step-2 -- src/lib/agent.ts
 ```
 
-Close each diff tab to advance through the changed files. Explain the extraction watermark, human/assistant text filtering, structured-output validation, and owner-scoped inserts. Stop the server, then:
+Close the diff tab when finished. Explain the existing MongoDBSaver accessor and stable `thread_id`. Stop the server, then:
 
 ```bash
 git status --short
@@ -246,17 +251,17 @@ pnpm test
 pnpm dev
 ```
 
-Tell Angela: `I live in Toronto and I am learning pottery.` Wait for extraction and show the memory record. Tool calls and results must not become personal facts. The watermark advances only after successful processing. Use synthetic data and acknowledge that extraction can make mistakes.
+Create a new conversation after loading Step 2. Send a message, restart the server, and reopen it. Earlier MemorySaver messages do not automatically migrate to MongoDBSaver. The application must verify conversation ownership before returning checkpoint-derived history.
 
-### Step 3, relevant recall
+### Step 3, personal-memory extraction
 
 Display:
 
 ```bash
-git difftool step-2 step-3 -- src/lib/agent.ts
+git difftool step-2 step-3
 ```
 
-Close the diff tab when finished. Explain profile queries, vector search with owner/active-status pre-filters, context de-duplication, and retrieval failure handling. Stop the server, then:
+Close each diff tab to advance through the changed files. Explain the extraction watermark, human/assistant text filtering, structured-output validation, and owner-scoped inserts. Stop the server, then:
 
 ```bash
 git status --short
@@ -266,21 +271,41 @@ pnpm test
 pnpm dev
 ```
 
-Ask Angela a pottery-related question in a fresh conversation. Inspect the memories-used indicator. Switch to Betty and confirm Angela's facts are absent. Distinguish profile recall from vector recall: a document query may find a fact before its embedding becomes searchable. The persona cookie is a demo switcher, not authentication.
+Tell Angela: `I live in Toronto and I am learning pottery.` Wait for extraction and show the memory record. Tool calls and results must not become personal facts. The watermark advances only after successful processing. Use synthetic data and acknowledge that extraction can make mistakes.
 
-### Step 4, changed facts and lineage
+### Step 4, relevant recall
 
 Display:
 
 ```bash
-git difftool step-3 step-4
+git difftool step-3 step-4 -- src/lib/agent.ts
+```
+
+Close the diff tab when finished. Explain profile queries, vector search with owner/active-status pre-filters, context de-duplication, and retrieval failure handling. Stop the server, then:
+
+```bash
+git status --short
+git switch --detach step-4
+pnpm typecheck
+pnpm test
+pnpm dev
+```
+
+Ask Angela a pottery-related question in a fresh conversation. Inspect the memories-used indicator. Switch to Betty and confirm Angela's facts are absent. Distinguish profile recall from vector recall: a document query may find a fact before its embedding becomes searchable. The persona cookie is a demo switcher, not authentication.
+
+### Step 5, changed facts and lineage
+
+Display:
+
+```bash
+git difftool step-4 step-5
 ```
 
 Close each diff tab to advance through the implementation and test changes. Explain insert, skip, supersede, and the lineage pointers. The prepared diff enables previously skipped action tests; no manual test editing is required. Stop the server, then:
 
 ```bash
 git status --short
-git switch --detach step-4
+git switch --detach step-5
 pnpm typecheck
 pnpm test
 pnpm dev
@@ -292,7 +317,7 @@ Tell Angela: `I now live in Montréal instead of Toronto.` After extraction and 
 
 Use the completed local checkpoint to demonstrate durability, fresh-thread recall, persona isolation, and supersession. The hosted app is a fallback, not the next checkpoint. The completed checkpoint matches the reference app code; databases and runtime configuration remain separate.
 
-On slide 20, keep the QR visible and direct attendees to https://mdb.link/hacktoberfest-2026-badge for the Build Agents with MongoDB Skill Badge. The course is https://learn.mongodb.com/courses/ai-agents-with-mongodb. Attendance alone does not earn the badge. Advance to Thank You for the brief sign-off.
+On slide 21, keep the QR visible and direct attendees to https://mdb.link/hacktoberfest-2026-badge for the Build Agents with MongoDB Skill Badge. The course is https://learn.mongodb.com/courses/ai-agents-with-mongodb. Attendance alone does not earn the badge. Advance to Thank You for the brief sign-off.
 
 ## Clear demo data
 
@@ -310,7 +335,7 @@ This irreversibly clears conversations, memories, checkpoints, checkpoint writes
 
 Before the event:
 
-- Rehearse all four switches in the actual live worktree with real-service checks.
+- Rehearse all five switches in the actual live worktree with real-service checks.
 - Confirm the selected cluster and database. If shared with the hosted app, keep all data disposable and synthetic, and avoid concurrent hosted chats.
 - Open hosted slides, localhost, the live-worktree editor, and the hosted fallback.
 - Allow slide-view popups and test navigation and notes.

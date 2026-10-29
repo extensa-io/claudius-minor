@@ -17,7 +17,7 @@
   <p class="eyebrow">HACKTOBERFEST 2026 · LIVE WALKTHROUGH</p>
   <h1>BUILD YOUR OWN<br>PERSONAL CHATBOT<br>ASSISTANT</h1>
   <p class="subtitle">Powered by MongoDB</p>
-  <aside class="notes">Claudius Minor is a personal AI assistant with streamed chat, web search, durable conversations, and user-owned long-term memory. MongoDB supplies the data backend, while an open-weight model supplies reasoning. Four implementation steps add durable state, memory extraction, recall, and memory updates.</aside>
+  <aside class="notes">Claudius Minor is a personal AI assistant with streamed chat, web search, durable conversations, and user-owned long-term memory. MongoDB supplies the data backend, while an open-weight model supplies reasoning. Five implementation steps add web-search tools, durable state, memory extraction, recall, and memory updates.</aside>
 </section>
 
 <section class="intro-slide dark" data-background-color="#001e2b">
@@ -96,9 +96,9 @@
 <section class="light split data-model-slide" data-template="29" data-background-color="#fdfff5">
   <h2>NO MESSAGES TABLE</h2>
   <div class="statement"><p class="emphasis">Model around<br>how the app<br>reads and writes.</p></div>
-  <div class="split-detail"><h3>Two reads, two responsibilities</h3><p><strong>Thread list reads conversation headers</strong><br>Owner, title, timestamps, watermark.<br>From the <code>conversations</code> collection.</p><p><strong>Current thread reads checkpoint messages</strong><br>Messages live with the agent state.<br>No second authoritative transcript.</p><p class="small">At start: checkpoints stay in memory.<br>Step 1: persist them in MongoDB.</p><p class="small">Schema-flexible is not schemaless.<br>Zod validates application boundaries.</p></div>
+  <div class="split-detail"><h3>Two reads, two responsibilities</h3><p><strong>Thread list reads conversation headers</strong><br>Owner, title, timestamps, watermark.<br>From the <code>conversations</code> collection.</p><p><strong>Current thread reads checkpoint messages</strong><br>Messages live with the agent state.<br>No second authoritative transcript.</p><p class="small">At start: checkpoints stay in memory.<br>Step 2: persist them in MongoDB.</p><p class="small">Schema-flexible is not schemaless.<br>Zod validates application boundaries.</p></div>
   <a class="article-link" href="https://dev.to/mongodb/no-messages-table-the-data-model-behind-my-own-claude-based-chatbot-54jp" target="_blank" rel="noopener noreferrer">Read: No messages table · DEV ↗</a>
-  <aside class="notes">Access patterns shape the data model. The thread list reads lightweight records from conversations: owner, title, timestamps, and extraction watermark. The current thread reads messages from LangGraph state through the checkpointer, without a separate authoritative messages collection. The start checkpoint uses MemorySaver in process memory. Step 1 introduces MongoDBSaver for durable checkpoints and checkpoint_writes. Application code verifies conversation ownership before accessing state. Zod validates inputs and structured model output at runtime. Background: https://dev.to/mongodb/no-messages-table-the-data-model-behind-my-own-claude-based-chatbot-54jp.</aside>
+  <aside class="notes">Access patterns shape the data model. The thread list reads lightweight records from conversations: owner, title, timestamps, and extraction watermark. The current thread reads messages from LangGraph state through the checkpointer, without a separate authoritative messages collection. The start checkpoint uses MemorySaver in process memory. Step 2 introduces MongoDBSaver for durable checkpoints and checkpoint_writes. Application code verifies conversation ownership before accessing state. Zod validates inputs and structured model output at runtime. Background: https://dev.to/mongodb/no-messages-table-the-data-model-behind-my-own-claude-based-chatbot-54jp.</aside>
 </section>
 
 <section class="dark flow-slide" data-template="100" data-background-color="#001e2b">
@@ -116,9 +116,21 @@
 <section class="dark demo-slide" data-template="6" data-background-color="#001e2b">
   <p class="eyebrow">LIVE DEMO · THE STARTING APP</p>
   <h2>LET’S MEET<br>CLAUDIUS MINOR</h2>
-  <p class="demo-description">Stream a conversation. Search the web.<br>See the data model and graph in action.</p>
+  <p class="demo-description">Ask from learned knowledge alone.<br>No tools. No live information yet.</p>
   <a class="demo-app-link" href="/" target="_blank" rel="noopener noreferrer">Open the app ↗</a>
-  <aside class="notes">The starting application already supports streamed chat and web search. Its sidebar lists conversation headers, while the open thread displays graph-state messages. Search activity and source links expose the tool's work. At the start checkpoint, graph state resides in MemorySaver, so restarting the server loses it; long-term memory loading and persistence are not implemented yet. The completed deployed application includes the later steps.</aside>
+  <aside class="notes">The starting application supports streamed chat but has no tools or web-search capability. It answers from learned, parametric knowledge and supplied conversation context, not live evidence. Current-event answers can be stale, incorrect, or appropriately uncertain; an incorrect answer is not guaranteed. Its sidebar lists conversation headers, while the open thread displays graph-state messages. Step 1 adds web search and the tool-result loop. The earlier graph diagram shows the target architecture, not the starting graph. At the start checkpoint, graph state resides in MemorySaver, so restarting the server loses it; long-term memory loading and persistence are not implemented yet. The completed deployed application includes the later steps.</aside>
+</section>
+
+<section class="dark step-slide" data-template="85" data-background-color="#001e2b">
+  <span class="chapter">01</span><h2>GIVE THE<br>AGENT<br>TOOLS</h2>
+  <div class="step-detail"><h3>Retrieve current evidence</h3><pre><code class="language-typescript">model.bindTools([webSearchTool]);
+
+builder
+  .addNode("tools", new ToolNode(tools))
+  .addConditionalEdges("agent",
+    toolsCondition, ["tools", END])
+  .addEdge("tools", "agent");</code></pre><p>The model requests a search.<br>Code executes it. Results return to the model.<br>Check the answer against its sources.</p></div>
+  <aside class="notes">Step 1 introduces the web_search tool backed by Tavily. A tool schema tells the model which function it can request; application code executes the function. toolsCondition routes tool calls to ToolNode, then results return to the agent for an answer. The app bounds repeated searches to four tool results per turn. Tools supply external evidence without changing the model weights. Search can still fail or return weak sources, and a sourced answer can still be wrong. Before this step the graph has no tool binding or execution node, and it routes directly from agent to END. Relevant files: src/lib/agent.ts, src/lib/search.ts, and src/lib/prompt.ts.</aside>
 </section>
 
 <section class="light columns three memory-platform-slide" data-template="38" data-background-color="#fdfff5">
@@ -145,28 +157,28 @@
 </section>
 
 <section class="dark step-slide" data-template="85" data-background-color="#001e2b">
-  <span class="chapter">01</span><h2>DURABLE<br>CHAT<br>STATE</h2>
+  <span class="chapter">02</span><h2>DURABLE<br>CHAT<br>STATE</h2>
   <div class="step-detail"><h3>LangGraph’s MongoDB integration</h3><pre><code class="language-typescript">new MongoDBSaver({
   client: await getClient(),
   dbName: DATABASE_NAME,
 });
 
 builder.compile({ checkpointer });</code></pre><p>MongoDBSaver stores checkpoints.<br>Restart. Restore the same thread.</p><p class="integration-package">@langchain/langgraph-checkpoint-mongodb</p></div>
-  <aside class="notes">Step 1 replaces the in-process MemorySaver with MongoDBSaver from @langchain/langgraph-checkpoint-mongodb, the LangGraph MongoDB checkpoint integration in the LangChain ecosystem. A stable thread_id identifies the conversation across requests and server restarts. MongoDBSaver owns the checkpoint storage format; the application does not maintain a second authoritative transcript. Conversation ownership must be verified before returning checkpoint-derived messages. Relevant file: src/lib/checkpointer.ts. Restarting the server and reopening the same thread demonstrates durable state.</aside>
+  <aside class="notes">Step 2 replaces the in-process MemorySaver with MongoDBSaver from @langchain/langgraph-checkpoint-mongodb, the LangGraph MongoDB checkpoint integration in the LangChain ecosystem. A stable thread_id identifies the conversation across requests and server restarts. MongoDBSaver owns the checkpoint storage format; the application does not maintain a second authoritative transcript. Conversation ownership must be verified before returning checkpoint-derived messages. Relevant file: src/lib/checkpointer.ts. Restarting the server and reopening the same thread demonstrates durable state.</aside>
 </section>
 
 <section class="dark step-slide" data-template="85" data-background-color="#001e2b">
-  <span class="chapter">02</span><h2>WRITE<br>USEFUL<br>MEMORIES</h2>
+  <span class="chapter">03</span><h2>WRITE<br>USEFUL<br>MEMORIES</h2>
   <div class="step-detail"><h3>Extract, validate, store</h3><p>Read new human and assistant text.<br>Exclude tool calls and results.<br>Validate durable facts.<br>Store owner and source.<br>Advance the extraction watermark.</p><pre><code class="language-json">{
   "content": "I am learning pottery",
   "category": "interest",
   "status": "active"
 }</code></pre></div>
-  <aside class="notes">Step 2 extracts durable facts from new human and assistant text after the extraction watermark. Tool calls and results are excluded so web-search content does not become a personal fact. Structured model output is validated before persistence. Records include owner, source conversation, category, importance, timestamps, and status. The watermark advances only after successful processing. The displayed JSON is illustrative rather than a complete memory record. Extraction can make mistakes, so memory needs correction and deletion paths.</aside>
+  <aside class="notes">Step 3 extracts durable facts from new human and assistant text after the extraction watermark. Tool calls and results are excluded so web-search content does not become a personal fact. Structured model output is validated before persistence. Records include owner, source conversation, category, importance, timestamps, and status. The watermark advances only after successful processing. The displayed JSON is illustrative rather than a complete memory record. Extraction can make mistakes, so memory needs correction and deletion paths.</aside>
 </section>
 
 <section class="dark step-slide" data-template="85" data-background-color="#001e2b">
-  <span class="chapter">03</span><h2>RECALL<br>PERSONAL<br>CONTEXT</h2>
+  <span class="chapter">04</span><h2>RECALL<br>PERSONAL<br>CONTEXT</h2>
   <div class="step-detail"><h3>Agent memory is a RAG app</h3><pre><code class="language-typescript">$vectorSearch: {
   index: "memories_vector",
   path: "content",
@@ -178,7 +190,7 @@ builder.compile({ checkpointer });</code></pre><p>MongoDBSaver stores checkpoint
     status: { $eq: "active" },
   },
 }</code></pre></div>
-  <aside class="notes">Step 3 uses semantic retrieval to find relevant user memories, including when the query uses different words. Atlas Automated Embedding uses Voyage AI voyage-4 to process indexed memory content and search text. The query supplies text directly: Atlas handles vector generation, so this app needs no embedding SDK. The autoEmbed field in the index selects voyage-4, while the query selects the index and applies owner filters. The vector query pre-filters by userId and active status inside the search operation. The current recall score floor of 0.65 is an application heuristic, not a universal relevance threshold. Embedding and indexing are asynchronous, so newly stored text may not be immediately searchable. Relevant file: src/lib/agent.ts.</aside>
+  <aside class="notes">Step 4 uses semantic retrieval to find relevant user memories, including when the query uses different words. Atlas Automated Embedding uses Voyage AI voyage-4 to process indexed memory content and search text. The query supplies text directly: Atlas handles vector generation, so this app needs no embedding SDK. The autoEmbed field in the index selects voyage-4, while the query selects the index and applies owner filters. The vector query pre-filters by userId and active status inside the search operation. The current recall score floor of 0.65 is an application heuristic, not a universal relevance threshold. Embedding and indexing are asynchronous, so newly stored text may not be immediately searchable. Relevant file: src/lib/agent.ts.</aside>
 </section>
 
 <section class="light memory-slide" data-template="29" data-background-color="#fdfff5">
@@ -198,7 +210,7 @@ builder.compile({ checkpointer });</code></pre><p>MongoDBSaver stores checkpoint
 </section>
 
 <section class="dark step-slide" data-template="85" data-background-color="#001e2b">
-  <span class="chapter">04</span><h2>MANAGE<br>CHANGING<br>FACTS</h2>
+  <span class="chapter">05</span><h2>MANAGE<br>CHANGING<br>FACTS</h2>
   <div class="step-detail"><h3>Insert · skip · supersede</h3><p>New fact → insert.<br>Duplicate fact → skip.<br>Changed fact → supersede.</p><pre><code class="language-text">Old: I live in Toronto
   status: superseded
   supersededBy → new record
@@ -206,7 +218,7 @@ builder.compile({ checkpointer });</code></pre><p>MongoDBSaver stores checkpoint
 New: I live in Montréal
   status: active
   supersedes → old record</code></pre></div>
-  <aside class="notes">Step 4 manages memory with insert, skip, and supersede actions. New facts are inserted, duplicates can be skipped, and changed facts can replace earlier active records while preserving supersedes and supersededBy lineage. Step 4 uses semantic neighbors, recent-write checks, and a structured LLM relation comparison so related but distinct facts can coexist. The completed checkpoint matches the reference app implementation. Similarity alone does not establish contradiction. The current two-document lineage update is not atomic. Relevant files: src/lib/memory.ts and src/lib/persistence.ts.</aside>
+  <aside class="notes">Step 5 manages memory with insert, skip, and supersede actions. New facts are inserted, duplicates can be skipped, and changed facts can replace earlier active records while preserving supersedes and supersededBy lineage. Step 5 uses semantic neighbors, recent-write checks, and a structured LLM relation comparison so related but distinct facts can coexist. The completed checkpoint matches the reference app implementation. Similarity alone does not establish contradiction. The current two-document lineage update is not atomic. Relevant files: src/lib/memory.ts and src/lib/persistence.ts.</aside>
 </section>
 
 <section class="light columns three" data-template="32" data-background-color="#fdfff5">
@@ -232,7 +244,7 @@ New: I live in Montréal
   <a class="badge-url" href="https://mdb.link/hacktoberfest-2026-badge" target="_blank" rel="noopener noreferrer">mdb.link/hacktoberfest-2026-badge</a>
   <aside class="notes">Earn your Build Agents with MongoDB Skill Badge at https://mdb.link/hacktoberfest-2026-badge. The QR code opens that attendee link. The underlying course is https://learn.mongodb.com/courses/ai-agents-with-mongodb. Apply the session's concepts and complete the course requirements to earn the badge; attendance alone does not establish completion.</aside>
 </section>
-`
+
 <section class="dark demo-slide" data-template="6" data-background-color="#001e2b">
   <p class="eyebrow">HACKTOBERFEST 2026</p>
   <h2>THANK YOU</h2>
