@@ -97,7 +97,7 @@ body{margin:0;background:var(--navy)}
 .reveal .qr-link{position:absolute;left:661px;top:130px;width:300px;display:block;text-align:center;text-decoration:none}
 .reveal .qr-link img{display:block;width:300px;height:300px;max-width:none;max-height:none;margin:0;background:white}
 .reveal .qr-link span{display:block;margin-top:25px;font-size:18px}
-.reveal .badge-url{position:absolute;left:597px;top:505px;width:429px;text-align:center;font-size:18px;color:var(--green)}
+.reveal .badge-url{position:absolute;left:579px;top:490px;width:465px;text-align:center;font-size:28px;font-weight:700;line-height:1.25;overflow-wrap:anywhere;color:var(--green)}
 .reveal .controls{color:var(--green)}
 .reveal .progress{color:var(--green);height:3px}
 .reveal .slide-number{font-family:Special Gothic,sans-serif;font-size:12px;right:54px;bottom:24px;background:none;color:var(--paper)}

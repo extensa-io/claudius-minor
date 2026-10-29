@@ -10,9 +10,9 @@ Open `/slides` on the local app or deployment. It redirects to `/presentation/in
 - Home and End jump to the beginning and end; Escape opens the overview.
 - **Speaker notes (S)** opens explanatory notes, upcoming slide, and timer. Allow popups.
 - `F` toggles fullscreen; `P` toggles the visible controls.
-- URL hashes and visible counters use 1-based numbering. `#/3` opens the opening badge announcement, `#/9` the data model, `#/10` the graph, `#/11` the demo introduction, and `#/12` the tools checkpoint. `#/15` opens durable conversations.
+- URL hashes and visible counters use 1-based numbering. `#/3` opens the opening badge announcement, `#/4` the session resources, `#/10` the data model, `#/11` the graph, `#/12` the demo introduction, and `#/13` the tools checkpoint. `#/16` opens durable conversations.
 
-The deck contains 23 slides. Slide 3 duplicates the closing badge CTA to announce the opportunity after the personal introduction. Notes are public learning material, not a presenter script: keep them free of personal reminders, timing cues, rehearsal instructions, and assessment answers.
+The deck contains 24 slides. Slide 3 duplicates the closing badge CTA to announce the opportunity after the personal introduction. Slide 4 uses the same layout for https://landing.mdb.link/hacktoberfest-2026 and the supplied `.assets/qrlanding.png`, bundled as `resources-qr.png`. All three QR slides share a larger, bold URL style. Notes are public learning material, not a presenter script: keep them free of personal reminders, timing cues, rehearsal instructions, and assessment answers.
 
 ## Standalone serving and PDF
 
@@ -64,26 +64,26 @@ Primary attendee link: https://mdb.link/hacktoberfest-2026-badge. The supplied Q
 
 | Reference questions | Slides | Concepts |
 |---|---|---|
-| 1 | 6, 21 | Reasoning, tools, memory |
-| 2 | 7, 21 | Adaptive multi-step tasks versus fixed validation |
-| 3 | 8, 21 | Plan tasks, data, and tools |
-| 4 | 8, 10, 12, 21 | Tools as callable external-interaction functions |
-| 5 | 8, 13, 18, 21 | APIs, database queries, and vector retrieval |
-| 6 | 6, 10, 12, 21 | LLM selects actions; code executes |
-| 7 | 10, 12, 21 | Cyclical graph and tool-result loop |
-| 8 | 14, 18, 20, 21 | Cross-thread personalization, not retraining |
-| 9 | 14, 15, 21 | Earlier discussion within a session |
-| 10 | 14, 15, 21 | Ordered session turns and thread-keyed checkpoints |
+| 1 | 7, 22 | Reasoning, tools, memory |
+| 2 | 8, 22 | Adaptive multi-step tasks versus fixed validation |
+| 3 | 9, 22 | Plan tasks, data, and tools |
+| 4 | 9, 11, 13, 22 | Tools as callable external-interaction functions |
+| 5 | 9, 14, 19, 22 | APIs, database queries, and vector retrieval |
+| 6 | 7, 11, 13, 22 | LLM selects actions; code executes |
+| 7 | 11, 13, 22 | Cyclical graph and tool-result loop |
+| 8 | 15, 19, 21, 22 | Cross-thread personalization, not retraining |
+| 9 | 15, 16, 22 | Earlier discussion within a session |
+| 10 | 15, 16, 22 | Ordered session turns and thread-keyed checkpoints |
 
 Teach concepts rather than reproducing assessment questions or an answer key. Attendance alone does not guarantee completion or a pass.
 
 ## Content accuracy
 
-- Slide 4 draws from [the Claudius introduction](https://dev.to/mongodb/im-building-my-own-claude-based-chatbot-powered-by-mongodb-42j8). The article's planned phases are not proof of completed features.
-- Slide 5 describes gpt-oss-120b for both chat and extraction through DigitalOcean. Open weights does not imply free inference, public training data, or local execution. Voyage voyage-4 serves the separate embedding role.
-- Slides 9 and 10 link to the [data model](https://dev.to/mongodb/no-messages-table-the-data-model-behind-my-own-claude-based-chatbot-54jp) and [graph](https://dev.to/mongodb/an-agent-is-a-graph-43h0) articles. Minor does not inherit all of Claudius's collections or Bedrock model switching.
+- Slide 5 draws from [the Claudius introduction](https://dev.to/mongodb/im-building-my-own-claude-based-chatbot-powered-by-mongodb-42j8). The article's planned phases are not proof of completed features.
+- Slide 6 describes gpt-oss-120b for both chat and extraction through DigitalOcean. Open weights does not imply free inference, public training data, or local execution. Voyage voyage-4 serves the separate embedding role.
+- Slides 10 and 11 link to the [data model](https://dev.to/mongodb/no-messages-table-the-data-model-behind-my-own-claude-based-chatbot-54jp) and [graph](https://dev.to/mongodb/an-agent-is-a-graph-43h0) articles. Minor does not inherit all of Claudius's collections or Bedrock model switching.
 - `start` has no model-callable tools, tool execution node, or search instruction. Its agent routes directly to END. Step 1 adds `web_search`, model binding, and the tool-result loop. Memory queries remain automatic graph work, not model-callable tools.
-- Slide 10 shows the target graph. Slides 11–12 contrast parametric knowledge with live evidence. Wrong answers are possible, not guaranteed; search results also require verification.
+- Slide 11 shows the target graph. Slides 12–13 contrast parametric knowledge with live evidence. Wrong answers are possible, not guaranteed; search results also require verification.
 - Short-term memory describes thread scope, not storage lifetime. MongoDBSaver restores graph state using `thread_id`, not a custom messages-table query.
 - `start` and Step 1 use in-process MemorySaver; Step 2 introduces MongoDBSaver.
 - Step 5 restores the completed app's recent-write checks and LLM relation comparison. Similarity is not proof of contradiction, and lineage updates are not atomic. The rebuilt `step-5` and `final` trees match the reference `main` commit.

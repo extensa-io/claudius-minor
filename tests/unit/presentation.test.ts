@@ -5,13 +5,16 @@ import { describe, expect, it } from "vitest";
 const root = resolve("public/presentation");
 const html = readFileSync(resolve(root, "index.html"), "utf8");
 const deckSlides = [...html.matchAll(/<section\b[^>]*>[\s\S]*?<\/section>/g)].map(([section]) => section);
-// Keep the original concept sequence separate from the repeated opening CTA.
-const slides = deckSlides.filter((_slide, index) => index !== 2);
+// Keep the concept sequence separate from the opening resource CTAs.
+const slides = deckSlides.filter((_slide, index) => index !== 2 && index !== 3);
 
 describe("livestream presentation", () => {
-  it("keeps 23 slides, an opening badge after the introduction, and notes on every slide", () => {
-    expect(deckSlides).toHaveLength(23);
+  it("keeps 24 slides, opening resource CTAs after the introduction, and notes on every slide", () => {
+    expect(deckSlides).toHaveLength(24);
     expect(deckSlides[2]).toBe(deckSlides.at(-2));
+    expect(deckSlides[3]).toContain("https://landing.mdb.link/hacktoberfest-2026");
+    expect(deckSlides[3]).toContain('src="resources-qr.png"');
+    expect(deckSlides[3]).toContain('class="dark badge-slide resources-slide"');
     expect(slides).toHaveLength(22);
     expect(slides[1]).toContain("HELLO, I’M<br>NÉSTOR");
     expect(slides[1]).toContain("Developer advocate at MongoDB");
@@ -58,7 +61,7 @@ describe("livestream presentation", () => {
     for (const [index, chapter] of [[10, "01"], [13, "02"], [14, "03"], [15, "04"], [17, "05"]] as const) {
       expect(slides[index]).toContain(`<span class="chapter">${chapter}</span>`);
     }
-    for (const slide of slides) expect(slide).toContain('class="notes"');
+    for (const slide of deckSlides) expect(slide).toContain('class="notes"');
     for (const index of [2, 5, 7, 12, 16]) expect(slides[index]).toMatch(/<h2>[^<]+<\/h2>/);
     const notes = [...html.matchAll(/<aside class="notes">([\s\S]*?)<\/aside>/g)].map(([, text]) => text);
     for (const note of notes) {
