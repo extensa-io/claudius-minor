@@ -85,9 +85,9 @@ Configure VS Code using **Configure VS Code diffs once** below, then inspect eac
 ```bash
 git difftool --tool=vscode start step-1 -- src/lib/agent.ts src/lib/prompt.ts
 git difftool --tool=vscode step-1 step-2 -- src/lib/agent.ts src/lib/conversation-store.ts
-git difftool --tool=vscode step-2 step-3
+git difftool --tool=vscode step-2 step-3 -- src/lib/extraction.ts src/lib/persistence.ts
 git difftool --tool=vscode step-3 step-4 -- src/lib/agent.ts
-git difftool --tool=vscode step-4 step-5
+git difftool --tool=vscode step-4 step-5 -- src/lib/memory.ts src/lib/persistence.ts
 ```
 
 ### Credentials and database isolation
@@ -253,7 +253,7 @@ Create a new conversation after loading Step 2. Send a message, restart the serv
 Display:
 
 ```bash
-git difftool --tool=vscode step-2 step-3
+git difftool --tool=vscode step-2 step-3 -- src/lib/extraction.ts src/lib/persistence.ts
 ```
 
 Close each diff tab to advance through the changed files. Explain the extraction watermark, human/assistant text filtering, structured-output validation, and owner-scoped inserts. Stop the server, then:
@@ -285,7 +285,7 @@ Ask Angela a pottery-related question in a fresh conversation. Inspect the memor
 Display:
 
 ```bash
-git difftool --tool=vscode step-4 step-5
+git difftool --tool=vscode step-4 step-5 -- src/lib/memory.ts src/lib/persistence.ts
 ```
 
 Close each diff tab to advance through the implementation and test changes. Explain insert, skip, supersede, and the lineage pointers. The prepared diff enables previously skipped action tests; no manual test editing is required. Stop the server, then:
