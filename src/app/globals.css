@@ -24,6 +24,8 @@ select{display:block;width:100%;margin-top:8px;padding:10px;border:1px solid var
 .conversation:hover{background:#f4f5f4}
 .chat{display:flex;flex-direction:column;min-width:0;min-height:0}
 .chat header{padding:18px 24px;border-bottom:1px solid var(--line);display:flex;align-items:center;justify-content:space-between;gap:12px}
+.demo-stage{display:flex;flex-direction:column;gap:2px;padding:6px 10px;border:1px solid var(--green);border-radius:8px;background:var(--pale);color:var(--green);font-size:12px}
+.demo-stage b{font-size:14px}
 .chat-header-actions{display:flex;align-items:center;gap:12px}
 .chat-header-actions>span,.memory-panel>p{font-size:12px;color:var(--muted)}
 .lock-demo,.reset-demo{border:0;background:transparent;color:var(--muted);font-size:12px;padding:6px 8px;border-radius:6px;white-space:nowrap}
@@ -78,4 +80,4 @@ form button,.memory button{border:0;background:var(--green);color:white;border-r
 .reset-actions .confirm-reset{background:#a32d2d;color:white}
 @media(min-width:1600px){.shell{grid-template-columns:230px minmax(0,1fr) 280px}}
 @media(max-width:1100px){.shell{grid-template-columns:190px minmax(0,1fr)}.memory-panel{display:none}.chat-header-actions>span{display:none}}
-@media(max-width:650px){.mobile-controls{display:flex;flex-wrap:wrap;gap:8px;padding:12px;border-bottom:1px solid var(--line);align-items:end}.mobile-controls label{flex:1;min-width:120px;font-size:12px;color:var(--muted)}.mobile-controls button{padding:10px;border:0;border-radius:8px;background:var(--pale);color:var(--green)}.mobile-controls select{margin-top:4px}.shell{grid-template-columns:minmax(0,1fr)}.sidebar{display:none}.chat header{padding:12px}.desktop-chat-title{display:none}.mobile-site-title{display:inline}.chat-title{font-size:14px}.messages{padding:12px}.messages article{padding:14px}.chat form{padding:12px}.chat-header-actions{gap:2px}.site-footer{padding:8px;font-size:11px}}
+@media(max-width:650px){.mobile-controls{display:flex;flex-wrap:wrap;gap:8px;padding:12px;border-bottom:1px solid var(--line);align-items:end}.mobile-controls label{flex:1;min-width:120px;font-size:12px;color:var(--muted)}.mobile-controls button{padding:10px;border:0;border-radius:8px;background:var(--pale);color:var(--green)}.mobile-controls select{margin-top:4px}.shell{grid-template-columns:minmax(0,1fr)}.sidebar{display:none}.chat header{padding:12px;flex-wrap:wrap}.desktop-chat-title{display:none}.mobile-site-title{display:inline}.chat-title{font-size:14px}.messages{padding:12px}.messages article{padding:14px}.chat form{padding:12px}.chat-header-actions{gap:2px}.site-footer{padding:8px;font-size:11px}}

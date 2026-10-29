@@ -4,6 +4,7 @@ import { useChat } from "@ai-sdk/react";
 import { DefaultChatTransport, type UIMessage } from "ai";
 import { useCallback, useEffect, useState } from "react";
 import { MessageMarkdown } from "@/app/components/message-markdown";
+import { DEMO_STAGE } from "@/lib/demo-stage";
 
 const REPO_URL = "https://github.com/extensa-io/claudius-minor";
 const siteTitle = (
@@ -343,6 +344,13 @@ function ChatApp({
             <span className="desktop-chat-title">Chat</span>
             <span className="mobile-site-title">{siteTitle}</span>
           </strong>
+          <div
+            className="demo-stage"
+            aria-label="Current livestream checkpoint"
+          >
+            <b>{DEMO_STAGE.tag}</b>
+            <span>{DEMO_STAGE.label}</span>
+          </div>
           <div className="chat-header-actions">
             <span>Powered by MongoDB</span>
             <button
