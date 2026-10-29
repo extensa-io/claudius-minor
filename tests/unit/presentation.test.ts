@@ -4,10 +4,14 @@ import { describe, expect, it } from "vitest";
 
 const root = resolve("public/presentation");
 const html = readFileSync(resolve(root, "index.html"), "utf8");
-const slides = [...html.matchAll(/<section\b[^>]*>[\s\S]*?<\/section>/g)].map(([section]) => section);
+const deckSlides = [...html.matchAll(/<section\b[^>]*>[\s\S]*?<\/section>/g)].map(([section]) => section);
+// Keep the original concept sequence separate from the repeated opening CTA.
+const slides = deckSlides.filter((_slide, index) => index !== 2);
 
 describe("livestream presentation", () => {
-  it("keeps 22 slides, a native introduction second, and notes on every slide", () => {
+  it("keeps 23 slides, an opening badge after the introduction, and notes on every slide", () => {
+    expect(deckSlides).toHaveLength(23);
+    expect(deckSlides[2]).toBe(deckSlides.at(-2));
     expect(slides).toHaveLength(22);
     expect(slides[1]).toContain("HELLO, I’M<br>NÉSTOR");
     expect(slides[1]).toContain("Developer advocate at MongoDB");

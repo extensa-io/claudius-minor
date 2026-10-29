@@ -77,7 +77,7 @@ Personas, collections, and indexes are preserved. No `pnpm db:setup` is needed a
 
 ## Livestream slides
 
-The HTML presentation lives in this repository under `public/presentation/` and is hosted alongside the app in the same deployment. No separate slide hosting service is needed. The 22-slide deck follows the five coding steps, includes the skill badge QR code, and closes with a Thank You slide.
+The HTML presentation lives in this repository under `public/presentation/` and is hosted alongside the app in the same deployment. No separate slide hosting service is needed. The 23-slide deck follows the five coding steps, previews the skill badge immediately after the personal introduction, repeats its QR code at the end, and closes with a Thank You slide.
 
 ### Open the slides
 
@@ -91,7 +91,7 @@ The HTML presentation lives in this repository under `public/presentation/` and 
 - Click **Speaker notes (S)** or press `S` to open attendee-friendly explanations, the upcoming slide, and a timer in a separate window. The public notes expand on the concepts and link to resources; they contain no presenter instructions. Allow browser popups.
 - Press `F` for fullscreen. Click **Hide controls (P)** or press `P` to toggle presenter controls.
 - Share only the audience slide window in StreamYard, not the speaker-notes window.
-- Counters and URL hashes start at 1, including the title. Append `#/3` to the standalone deck URL to open **What we’re building today**.
+- Counters and URL hashes start at 1, including the title. Append `#/4` to the standalone deck URL to open **What we’re building today**.
 
 ### Offline and PDF
 

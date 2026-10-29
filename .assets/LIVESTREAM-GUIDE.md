@@ -141,26 +141,26 @@ Skipped tests do not verify a service. Unit tests do not prove provider behavior
 
 ## Event schedule
 
-This is the authoritative schedule. The 22-slide deck uses 1-based numbering, including the title. Public slide notes explain concepts and resources; they contain no presenter instructions.
+This is the authoritative schedule. The 23-slide deck uses 1-based numbering, including the title. Public slide notes explain concepts and resources; they contain no presenter instructions.
 
 | Minutes | Slides and activity |
 |---|---|
-| 0–3 | 1–2, title and introduction |
-| 3–5 | 3–4, app purpose and open-weight model stack |
-| 5–8 | 5–7, reasoning, tools, memory, and planning |
-| 8–10 | 8–9, access-pattern modeling and graph architecture |
-| 10–13 | 10, starting-app demo |
-| 13–18 | 11, Step 1, tools and current-evidence demonstration |
-| 18–21 | 12–13, data backend and memory scopes |
-| 21–27 | 14, Step 2 and restart demonstration |
-| 27–33 | 15, Step 3 and extraction demonstration |
-| 33–39 | 16–17, Step 4 and owner-filtered recall |
-| 39–45 | 18, Step 5 and supersession |
-| 45–51 | 19, end-to-end proof |
+| 0–3 | 1–3, title, personal introduction, and brief badge announcement |
+| 3–5 | 4–5, app purpose and open-weight model stack |
+| 5–8 | 6–8, reasoning, tools, memory, and planning |
+| 8–10 | 9–10, access-pattern modeling and graph architecture |
+| 10–13 | 11, starting-app demo |
+| 13–18 | 12, Step 1, tools and current-evidence demonstration |
+| 18–21 | 13–14, data backend and memory scopes |
+| 21–27 | 15, Step 2 and restart demonstration |
+| 27–33 | 16, Step 3 and extraction demonstration |
+| 33–39 | 17–18, Step 4 and owner-filtered recall |
+| 39–45 | 19, Step 5 and supersession |
+| 45–51 | 20, end-to-end proof |
 | 51–54 | Flexible buffer; discuss caveats with the relevant demos |
-| 54–56 | 20, concept recap |
-| 56–58 | 21, badge CTA |
-| 58 | 22, brief Thank You sign-off |
+| 54–56 | 21, concept recap |
+| 56–58 | 22, badge CTA |
+| 58 | 23, brief Thank You sign-off |
 
 Keep the event below 60 minutes. Protect the badge CTA rather than extending the coding segments or adding an unbounded Q&A.
 
@@ -211,7 +211,7 @@ At localhost on `start`, select Angela and ask a stable knowledge question, such
 
 Choose a recent, settled fact shortly before the event, for example the winner of a sporting final held last weekend or a product version released this week. Ask for the event date and source links. Verify the expected answer and retain the source URL and date in private rehearsal notes. Avoid ambiguous questions, future events, and volatile counts. If the model knows the answer by chance, it still cannot verify the fact with a live tool. Never present invented source links as evidence.
 
-Connect this to slides 8 and 9: the sidebar reads conversation headers; the current thread reads graph-state messages. The browser sends new text and a conversation ID, not an authoritative transcript. MemorySaver does not survive a restart yet.
+Connect this to slides 9 and 10: the sidebar reads conversation headers; the current thread reads graph-state messages. The browser sends new text and a conversation ID, not an authoritative transcript. MemorySaver does not survive a restart yet.
 
 ### Step 1, introduce tools
 
@@ -317,7 +317,7 @@ Tell Angela: `I now live in Montréal instead of Toronto.` After extraction and 
 
 Use the completed local checkpoint to demonstrate durability, fresh-thread recall, persona isolation, and supersession. The hosted app is a fallback, not the next checkpoint. The completed checkpoint matches the reference app code; databases and runtime configuration remain separate.
 
-On slide 21, keep the QR visible and direct attendees to https://mdb.link/hacktoberfest-2026-badge for the Build Agents with MongoDB Skill Badge. The course is https://learn.mongodb.com/courses/ai-agents-with-mongodb. Attendance alone does not earn the badge. Advance to Thank You for the brief sign-off.
+On slide 22, keep the QR visible and direct attendees to https://mdb.link/hacktoberfest-2026-badge for the Build Agents with MongoDB Skill Badge. The course is https://learn.mongodb.com/courses/ai-agents-with-mongodb. Attendance alone does not earn the badge. Advance to Thank You for the brief sign-off.
 
 ## Clear demo data
 
