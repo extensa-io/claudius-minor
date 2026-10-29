@@ -2,6 +2,7 @@ import { accessError } from "@/lib/access";
 import { getCheckpointer } from "@/lib/checkpointer";
 import { databaseErrorResponse } from "@/lib/database-error";
 import { collections } from "@/lib/db";
+import { getConversationStore } from "@/lib/conversation-store";
 import { resolveCurrentUser, UserError } from "@/lib/user";
 import { acquireOperation, OperationError, operationResponse } from "@/lib/operations";
 
@@ -22,7 +23,7 @@ export async function POST(request: Request) {
   let release: (() => Promise<void>) | undefined;
   try {
     release = await acquireOperation(user._id);
-    const conversations = await collections.conversations();
+    const conversations = await getConversationStore();
     const owned = await conversations.find({ userId: user._id }).toArray();
     const saver = await getCheckpointer();
     for (const conversation of owned) await saver.deleteThread(conversation._id.toString());

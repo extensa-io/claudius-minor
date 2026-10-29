@@ -19,9 +19,9 @@ The slide links open the completed hosted app. Use a pre-opened localhost tab fo
 
 | Tag | Behavior added |
 |---|---|
-| `start` | Streamed chat with no tools; MemorySaver holds state in process memory; personal memory remains TODOs |
+| `start` | Streamed chat with no tools; conversation headers and MemorySaver messages stay in process memory; personal memory remains TODOs |
 | `step-1` | Web-search tool binding, execution, and the tool-result loop |
-| `step-2` | MongoDBSaver makes graph state durable |
+| `step-2` | MongoDB conversation headers and MongoDBSaver make the entire conversation durable |
 | `step-3` | Extraction reads new conversation text and inserts memories |
 | `step-4` | Owner-filtered profile and vector recall supply prompt context |
 | `step-5` | Duplicate decisions and supersession lineage replace insert-only persistence |
@@ -79,15 +79,14 @@ Adjust the absolute path on another machine. Restore `.env` privately afterward.
 
 Choose another path if this worktree already exists. Detached HEAD is intentional: this walkthrough loads snapshots without creating new commits. Keep the original `main` folder untouched, including any unrelated local changes. Use Node 22 or newer and the package manager declared by the checkpoint.
 
-Inspect the actual transitions before rehearsal:
+Configure VS Code using **Configure VS Code diffs once** below, then inspect each transition visually before rehearsal. Run one command at a time and close its diff tabs before moving on:
 
 ```bash
-git show -s --format='%h %s' start step-1 step-2 step-3 step-4 step-5 final
-git diff --stat start..step-1
-git diff --stat step-1..step-2
-git diff --stat step-2..step-3
-git diff --stat step-3..step-4
-git diff --stat step-4..step-5
+git difftool --tool=vscode start step-1 -- src/lib/agent.ts src/lib/prompt.ts
+git difftool --tool=vscode step-1 step-2 -- src/lib/agent.ts src/lib/conversation-store.ts
+git difftool --tool=vscode step-2 step-3
+git difftool --tool=vscode step-3 step-4 -- src/lib/agent.ts
+git difftool --tool=vscode step-4 step-5
 ```
 
 ### Credentials and database isolation
@@ -211,14 +210,14 @@ At localhost on `start`, select Angela and ask a stable knowledge question, such
 
 Choose a recent, settled fact shortly before the event, for example the winner of a sporting final held last weekend or a product version released this week. Ask for the event date and source links. Verify the expected answer and retain the source URL and date in private rehearsal notes. Avoid ambiguous questions, future events, and volatile counts. If the model knows the answer by chance, it still cannot verify the fact with a live tool. Never present invented source links as evidence.
 
-Connect this to slides 10 and 11: the sidebar reads conversation headers; the current thread reads graph-state messages. The browser sends new text and a conversation ID, not an authoritative transcript. MemorySaver does not survive a restart yet.
+Connect this to slides 10 and 11: the sidebar reads in-process conversation headers; the current thread reads MemorySaver messages. The browser sends new text and a conversation ID, not an authoritative transcript. Browser refresh does not restart the server, so both remain visible. Stop and restart the server, refresh localhost, and confirm both the sidebar entries and messages disappear. Neither is stored in MongoDB before Step 2. Users, access controls, operation locks, and usage counters still use MongoDB.
 
 ### Step 1, introduce tools
 
 Display:
 
 ```bash
-git difftool start step-1 -- src/lib/agent.ts src/lib/prompt.ts
+git difftool --tool=vscode start step-1 -- src/lib/agent.ts src/lib/prompt.ts
 ```
 
 Explain the tool schema, model binding, conditional routing, ToolNode execution, result loop, and four-result search bound. Stop the server, then:
@@ -231,17 +230,17 @@ pnpm test
 pnpm dev
 ```
 
-Refresh localhost and start a fresh conversation. Repeat the same current-event question without pasting the answer or earlier output. Show the search indicator, returned source links, and answer. Inspect the sources against the privately verified event date and fact. Tool execution does not prove accuracy; sources can be weak or stale. The model may choose not to search, so rehearse a clear request to search for current evidence. If search fails, label the failure and follow the recovery policy. Restarting discarded the previous in-process transcript; no state migration occurs yet.
+Refresh localhost and start a fresh conversation. Repeat the same current-event question without pasting the answer or earlier output. Show the search indicator, returned source links, and answer. Inspect the sources against the privately verified event date and fact. Tool execution does not prove accuracy; sources can be weak or stale. The model may choose not to search, so rehearse a clear request to search for current evidence. If search fails, label the failure and follow the recovery policy. Restarting discarded the previous in-process headers and transcript; no state migration occurs yet.
 
 ### Step 2, durable conversations
 
 Display:
 
 ```bash
-git difftool step-1 step-2 -- src/lib/agent.ts
+git difftool --tool=vscode step-1 step-2 -- src/lib/agent.ts src/lib/conversation-store.ts
 ```
 
-Close the diff tab when finished. Explain the existing MongoDBSaver accessor and stable `thread_id`. Stop the server, then:
+Close each diff tab when finished. Explain how the conversation-store accessor switches from process memory to MongoDB and the graph switches to MongoDBSaver with a stable `thread_id`. Stop the server, then:
 
 ```bash
 git status --short
@@ -251,14 +250,14 @@ pnpm test
 pnpm dev
 ```
 
-Create a new conversation after loading Step 2. Send a message, restart the server, and reopen it. Earlier MemorySaver messages do not automatically migrate to MongoDBSaver. The application must verify conversation ownership before returning checkpoint-derived history.
+Create a new conversation after loading Step 2. Send a message, restart the server, and reopen it. Earlier transient headers and MemorySaver messages do not automatically migrate to MongoDB. The application must verify conversation ownership before returning checkpoint-derived history.
 
 ### Step 3, personal-memory extraction
 
 Display:
 
 ```bash
-git difftool step-2 step-3
+git difftool --tool=vscode step-2 step-3
 ```
 
 Close each diff tab to advance through the changed files. Explain the extraction watermark, human/assistant text filtering, structured-output validation, and owner-scoped inserts. Stop the server, then:
@@ -278,7 +277,7 @@ Tell Angela: `I live in Toronto and I am learning pottery.` Wait for extraction 
 Display:
 
 ```bash
-git difftool step-3 step-4 -- src/lib/agent.ts
+git difftool --tool=vscode step-3 step-4 -- src/lib/agent.ts
 ```
 
 Close the diff tab when finished. Explain profile queries, vector search with owner/active-status pre-filters, context de-duplication, and retrieval failure handling. Stop the server, then:
@@ -298,7 +297,7 @@ Ask Angela a pottery-related question in a fresh conversation. Inspect the memor
 Display:
 
 ```bash
-git difftool step-4 step-5
+git difftool --tool=vscode step-4 step-5
 ```
 
 Close each diff tab to advance through the implementation and test changes. Explain insert, skip, supersede, and the lineage pointers. The prepared diff enables previously skipped action tests; no manual test editing is required. Stop the server, then:

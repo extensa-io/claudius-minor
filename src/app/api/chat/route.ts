@@ -2,7 +2,7 @@ import { accessError } from "@/lib/access";
 import { HumanMessage } from "@langchain/core/messages";
 import { createUIMessageStream, createUIMessageStreamResponse } from "ai";
 import { ObjectId } from "mongodb";
-import { collections } from "@/lib/db";
+import { getConversationStore } from "@/lib/conversation-store";
 import { databaseErrorResponse } from "@/lib/database-error";
 import { ChatInputSchema } from "@/lib/schemas";
 import { resolveCurrentUser, UserError } from "@/lib/user";
@@ -24,7 +24,7 @@ export async function POST(request: Request) {
   try {
     const user = await resolveCurrentUser();
     const { message, conversationId } = parsed.data;
-    const conversations = await collections.conversations();
+    const conversations = await getConversationStore();
     let conversation = conversationId ? await conversations.findOne({ _id: new ObjectId(conversationId), userId: user._id }) : null;
     if (conversationId && !conversation) return Response.json({ error: "Conversation not found." }, { status: 404 });
     release = await acquireOperation(user._id);

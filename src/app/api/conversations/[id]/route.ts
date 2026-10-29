@@ -2,7 +2,7 @@ import { accessError } from "@/lib/access";
 import { ObjectId } from "mongodb";
 import { databaseErrorResponse } from "@/lib/database-error";
 import { resolveCurrentUser, UserError } from "@/lib/user";
-import { collections } from "@/lib/db";
+import { getConversationStore } from "@/lib/conversation-store";
 import { getChatGraph } from "@/lib/agent";
 
 export async function GET(request: Request, context: { params: Promise<{ id: string }> }) {
@@ -12,7 +12,7 @@ export async function GET(request: Request, context: { params: Promise<{ id: str
     const user = await resolveCurrentUser();
     const { id } = await context.params;
     if (!ObjectId.isValid(id)) return Response.json({ error: "Conversation not found." }, { status: 404 });
-    const conversation = await (await collections.conversations()).findOne({ _id: new ObjectId(id), userId: user._id });
+    const conversation = await (await getConversationStore()).findOne({ _id: new ObjectId(id), userId: user._id });
     if (!conversation) return Response.json({ error: "Conversation not found." }, { status: 404 });
     const graph = await getChatGraph();
     const state = await graph.getState({ configurable: { thread_id: id } });

@@ -85,7 +85,7 @@ Teach concepts rather than reproducing assessment questions or an answer key. At
 - `start` has no model-callable tools, tool execution node, or search instruction. Its agent routes directly to END. Step 1 adds `web_search`, model binding, and the tool-result loop. Memory queries remain automatic graph work, not model-callable tools.
 - Slide 11 shows the target graph. Slides 12–13 contrast parametric knowledge with live evidence. Wrong answers are possible, not guaranteed; search results also require verification.
 - Short-term memory describes thread scope, not storage lifetime. MongoDBSaver restores graph state using `thread_id`, not a custom messages-table query.
-- `start` and Step 1 use in-process MemorySaver; Step 2 introduces MongoDBSaver.
+- `start` and Step 1 keep conversation headers and MemorySaver messages in process memory, with no MongoDB conversation writes or reads. Browser refresh keeps them; server restart clears both. Step 2 introduces MongoDB conversation headers and MongoDBSaver.
 - Step 5 restores the completed app's recent-write checks and LLM relation comparison. Similarity is not proof of contradiction, and lineage updates are not atomic. The rebuilt `step-5` and `final` trees match the reference `main` commit.
 - Profile retrieval can work before vector indexing catches up. Persistence alone does not demonstrate semantic recall.
 
