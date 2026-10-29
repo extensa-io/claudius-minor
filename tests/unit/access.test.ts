@@ -10,7 +10,14 @@ describe("presenter access", () => {
   it("fails closed in production without a configured code", () => {
     expect(accessError(request(), { NODE_ENV: "production" })?.status).toBe(503);
     expect(accessError(request(), { NODE_ENV: "production", APP_ACCESS_CODE: "" })?.status).toBe(503);
-    expect(accessError(request(), { APP_ACCESS_CODE: "short" })?.status).toBe(503);
+    expect(accessError(request(), { NODE_ENV: "production", APP_ACCESS_CODE: "   " })?.status).toBe(503);
+  });
+
+  it("accepts any nonblank code length while requiring an exact match", () => {
+    for (const value of ["x", "short"]) {
+      expect(accessError(request(value), { NODE_ENV: "production", APP_ACCESS_CODE: value })).toBeNull();
+      expect(accessError(request("wrong"), { APP_ACCESS_CODE: value })?.status).toBe(401);
+    }
   });
 
   it("allows local development without a code", () => {

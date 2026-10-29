@@ -43,7 +43,7 @@ DigitalOcean App Platform accepts the spec in `.do/app.yaml` or the Deploy to Di
 
 ## Presenter access
 
-Set `APP_ACCESS_CODE` as a runtime **SECRET** on the `web` service before deploying. Generate a high-entropy code with `openssl rand -hex 24`. Production rejects all API requests when the code is missing or shorter than 16 characters. Local development permits access without a configured code.
+Set `APP_ACCESS_CODE` as a runtime **SECRET** on the `web` service before deploying. Generate a high-entropy code with `openssl rand -hex 24`. Production rejects all API requests when the code is missing or blank. Any nonblank length is accepted, but a long random code is recommended for a publicly hosted app. Local development permits access without a configured code.
 
 Enter the code on the homepage to open the demo. The browser keeps it only in React memory and sends it in the `x-access-code` header on every API request, including streaming chat. It never stores the code in a cookie, URL, local storage, or session storage. Reloading the page or clicking **Lock demo** requires entering it again. The existing persona cookie still selects Angela, Betty, or Caroline; it does not grant API access.
 
@@ -73,7 +73,7 @@ pnpm db:reset
 
 The hosted and local apps can stay running. Reset acquires the same exclusive operation lock as chat and extraction; if an operation is active, it refuses without deleting anything. Wait for completion and retry. It never removes another worker's lock. A stale crash lock still requires the documented `demo:unlock` recovery.
 
-Personas, collections, and indexes are preserved. No `pnpm db:setup` is needed afterward. Refresh open app tabs after reset; vector-search visibility may briefly lag behind deletions. The deletion is irreversible and may be partial if the database fails during cleanup. The command uses the app's `DATABASE_NAME` constant, not the database suffix in the connection URI. This script is available on `main`; existing walkthrough snapshots do not automatically gain new commands.
+Personas, collections, and indexes are preserved. No `pnpm db:setup` is needed afterward. Refresh open app tabs after reset; vector-search visibility may briefly lag behind deletions. The deletion is irreversible and may be partial if the database fails during cleanup. The command uses the app's `DATABASE_NAME` constant, not the database suffix in the connection URI. This script is included in `main` and every rebuilt walkthrough checkpoint.
 
 ## Livestream slides
 

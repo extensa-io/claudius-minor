@@ -26,7 +26,7 @@ The slide links open the completed hosted app. Use a pre-opened localhost tab fo
 | `step-4` | Duplicate decisions and supersession lineage replace insert-only persistence |
 | `final` | Completed reference app snapshot, not a fifth lesson |
 
-The rebuilt checkpoints use the current app's UI, dependencies, credential validation, scripts, and safeguards throughout. Only the four lesson capabilities are withheld at `start`. Step 4 restores the reference app's recent-write checks and structured memory-relation comparison. Later changes to `main` are currently limited to presentation assets and presentation tests; use the hosted slides for the latest copy. `step-4`, `final`, and the reference `main` commit have identical file trees. Lineage writes are not an atomic multi-document transaction.
+The rebuilt checkpoints use the current app's UI, dependencies, credential validation, scripts, and safeguards throughout. Only the four lesson capabilities are withheld at `start`. Step 4 restores the reference app's recent-write checks and structured memory-relation comparison. The checkpoints include the latest slides, lock-aware `db:reset`, and access-code validation with no minimum length. Use the hosted slides during the event so tag switching cannot interrupt the presentation. `step-4`, `final`, and the reference `main` commit have identical file trees. Lineage writes are not an atomic multi-document transaction.
 
 ## Prepare the local worktree
 
@@ -92,13 +92,13 @@ git diff --stat step-3..step-4
 
 The new worktree does not inherit `.env`. Restore your private walkthrough backup to this folder, or create `.env` from `.env.example` and populate it privately. Verify the path is `claudius-minor-live/.env`, not the original repo's file. Never display, commit, or copy credentials into public notes.
 
-- `MONGODB_URI`: a separate Atlas walkthrough cluster.
+- `MONGODB_URI`: the demo Atlas cluster. Sharing the hosted app's database is acceptable when all records are disposable; both apps share personas, memories, usage counters, and the mutation lock.
 - `DO_MODEL_ACCESS_KEY`: DigitalOcean model access key.
 - `DO_INFERENCE_BASE_URL`: normally `https://inference.do-ai.run/v1`.
 - `CHAT_MODEL` and `EXTRACTION_MODEL`: the same verified gpt-oss-120b endpoint identifier.
 - `TAVILY_API_KEY`: web-search credentials.
 
-The tagged database accessor and MongoDBSaver explicitly select `claudius_minor`. Changing only the URI's database suffix does not isolate two apps on the same cluster. A separate cluster avoids modifying the hosted app's personas, conversations, and memories. Allow connections from the presenter's network and confirm Atlas supports the required Automated Embedding index.
+The database accessor and MongoDBSaver explicitly select `claudius-minor-app`. Changing only the URI's database suffix does not isolate two apps on the same cluster. A separate cluster provides isolation; when sharing the database, reset affects both apps and concurrent mutations compete for the shared lock. Allow connections from the presenter's network and confirm Atlas supports the required Automated Embedding index.
 
 The checkpoint scripts load `.env` explicitly, matching the completed app:
 
@@ -304,14 +304,14 @@ pnpm db:reset
 
 Apps can stay running. Reset acquires the shared exclusive mutation lock and refuses if chat, extraction, or another reset is active. Wait and retry; do not clear another worker's lock. A stale crash lock requires the documented `demo:unlock` procedure.
 
-This irreversibly clears conversations, memories, checkpoints, checkpoint writes, and usage counters. It preserves users, collections, indexes, and other workers' locks in `claudius-minor-app`. No setup or vector-index rebuild is needed. It uses the current app's `DATABASE_NAME`, not the URI suffix. Back up anything needed first and refresh open app tabs afterward. Vector-search deletion visibility may lag briefly; a database failure can leave partial cleanup. The command is not present in previously created tags; do not assume the live worktree has it. No reset was performed when adding this script.
+This irreversibly clears conversations, memories, checkpoints, checkpoint writes, and usage counters. It preserves users, collections, indexes, and other workers' locks in `claudius-minor-app`. No setup or vector-index rebuild is needed. It uses the current app's `DATABASE_NAME`, not the URI suffix. Back up anything needed first and refresh open app tabs afterward. Vector-search deletion visibility may lag briefly; a database failure can leave partial cleanup. The reset command is included in every rebuilt checkpoint. No reset is performed by switching tags.
 
 ## Preflight and recovery
 
 Before the event:
 
 - Rehearse all four switches in the actual live worktree with real-service checks.
-- Confirm local data is isolated from the hosted app and contains only synthetic facts.
+- Confirm the selected cluster and database. If shared with the hosted app, keep all data disposable and synthetic, and avoid concurrent hosted chats.
 - Open hosted slides, localhost, the live-worktree editor, and the hosted fallback.
 - Allow slide-view popups and test navigation and notes.
 - In MLH StreamYard, share only the audience surface; keep notes and credentials unshared.
