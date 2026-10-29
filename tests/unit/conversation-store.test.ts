@@ -5,7 +5,7 @@ const mocks = vi.hoisted(() => ({ collection: vi.fn() }));
 vi.mock("@/lib/db", () => ({
   collections: { conversations: mocks.collection },
 }));
-const durable = true;
+const durable = false;
 
 describe("checkpoint conversation storage", () => {
   it("uses MongoDB only from the durable-conversation checkpoint onward", async () => {

@@ -28,25 +28,11 @@ export function decideMemoryAction(
   hits: MemoryHit[],
   relation?: MemoryRelation,
 ): MemoryAction {
-  if (
-    hits.some((hit) => normalize(hit.content) === normalize(candidate.content))
-  )
-    return { action: "skip" };
-  const previous = hits.find(
-    (hit) => hit._id.toString() === relation?.previousId,
-  );
-  if (previous && relation?.relation === "duplicate") return { action: "skip" };
-  if (previous && relation?.relation === "replacement")
-    return { action: "supersede", previous };
+  // TODO step 5: decide whether this fact duplicates, replaces, or coexists.
+  void candidate;
+  void hits;
+  void relation;
   return { action: "insert" };
-}
-
-function normalize(text: string): string {
-  return text
-    .toLowerCase()
-    .replace(/[^\p{L}\p{N}\s]/gu, "")
-    .replace(/\s+/g, " ")
-    .trim();
 }
 
 export function filterExtractionMessages(

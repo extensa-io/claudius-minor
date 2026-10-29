@@ -1,4 +1,4 @@
 export const DEMO_STAGE = {
-  tag: "step-5 / final",
-  label: "Completed app",
+  tag: "start",
+  label: "No tools · transient chat",
 } as const;

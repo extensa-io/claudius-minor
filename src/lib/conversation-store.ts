@@ -1,4 +1,4 @@
-import { collections } from "@/lib/db";
+import { getTransientConversationStore } from "@/lib/transient-conversations";
 
-// Step 2 persists conversation headers alongside durable graph checkpoints.
-export const getConversationStore = collections.conversations;
+// TODO step 2: persist headers alongside durable graph checkpoints.
+export const getConversationStore = getTransientConversationStore;
