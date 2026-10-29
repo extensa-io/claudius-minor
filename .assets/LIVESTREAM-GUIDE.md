@@ -204,7 +204,7 @@ The `&&` starts the server only if switching succeeds. If Git refuses a switch, 
 
 ### Starting-app demonstration
 
-The chat header shows the snapshot's checkpoint and capability, such as `start · No tools · transient chat` or `step-2 · Durable conversations`. Check this indicator after each switch and browser refresh. The completed `main` and `final` trees share the `main · Completed app` label to preserve their identical source trees.
+The chat header shows the snapshot's checkpoint and capability, such as `start · No tools · transient chat` or `step-2 · Durable conversations`. Check this indicator after each switch and browser refresh. The completed `step-5`, `final`, and `main` trees share the `step-5 / final · Completed app` label to preserve their identical source trees.
 
 ```bash
 pnpm dev
