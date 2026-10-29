@@ -63,6 +63,18 @@ Run `pnpm verify:live` with `APP_URL`, `APP_ACCESS_CODE`, and the matching `MONG
 
 For scripted API checks, include `x-access-code` in each request. Do not commit a populated code or use a `NEXT_PUBLIC_` variable.
 
+## Clear demo data
+
+Run this from the current main worktree to clear conversations, memories, checkpoints, checkpoint writes, and usage counters in `claudius-minor-app` on the configured cluster:
+
+```bash
+pnpm db:reset
+```
+
+The hosted and local apps can stay running. Reset acquires the same exclusive operation lock as chat and extraction; if an operation is active, it refuses without deleting anything. Wait for completion and retry. It never removes another worker's lock. A stale crash lock still requires the documented `demo:unlock` recovery.
+
+Personas, collections, and indexes are preserved. No `pnpm db:setup` is needed afterward. Refresh open app tabs after reset; vector-search visibility may briefly lag behind deletions. The deletion is irreversible and may be partial if the database fails during cleanup. The command uses the app's `DATABASE_NAME` constant, not the database suffix in the connection URI. This script is available on `main`; existing walkthrough snapshots do not automatically gain new commands.
+
 ## Livestream slides
 
 The HTML presentation lives in this repository under `public/presentation/` and is hosted alongside the app in the same deployment. No separate slide hosting service is needed. The 21-slide deck follows the four coding steps, includes the skill badge QR code, and closes with a Thank You slide.

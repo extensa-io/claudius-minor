@@ -24,11 +24,29 @@ The slide links open the completed hosted app. Use a pre-opened localhost tab fo
 | `step-2` | Extraction reads new conversation text and inserts memories |
 | `step-3` | Owner-filtered profile and vector recall supply prompt context |
 | `step-4` | Duplicate decisions and supersession lineage replace insert-only persistence |
-| `final` | Historical completed snapshot, not a fifth lesson |
+| `final` | Completed reference app snapshot, not a fifth lesson |
 
-The rebuilt checkpoints use the current app's UI, dependencies, credential validation, scripts, and safeguards throughout. Only the four lesson capabilities are withheld at `start`. Step 4 restores the current recent-write checks and structured memory-relation comparison. `step-4`, `final`, and the reference `main` commit have identical file trees. Lineage writes are not an atomic multi-document transaction.
+The rebuilt checkpoints use the current app's UI, dependencies, credential validation, scripts, and safeguards throughout. Only the four lesson capabilities are withheld at `start`. Step 4 restores the reference app's recent-write checks and structured memory-relation comparison. Later changes to `main` are currently limited to presentation assets and presentation tests; use the hosted slides for the latest copy. `step-4`, `final`, and the reference `main` commit have identical file trees. Lineage writes are not an atomic multi-document transaction.
 
 ## Prepare the local worktree
+
+### Replace an existing worktree
+
+Stop its dev server and inspect it before removal:
+
+```bash
+git -C ../claudius-minor-live status --short
+```
+
+Save any work you want to retain. Back up its `.env` privately outside the worktree; Git does not preserve ignored credentials. Remove the worktree from the original repository with:
+
+```bash
+git worktree remove ../claudius-minor-live
+```
+
+Git may refuse because `.env` or other untracked files remain. After backing them up, remove only those files deliberately and retry; do not use `--force` to discard unreviewed work. If you already deleted the folder using the file browser, run `git worktree prune` before creating it again.
+
+### Create the fresh worktree
 
 From the existing repository:
 
@@ -53,7 +71,7 @@ git diff --stat step-3..step-4
 
 ### Credentials and database isolation
 
-Configure this worktree's `.env` privately. Never display, commit, or copy credentials into public notes.
+The new worktree does not inherit `.env`. Restore your private walkthrough backup to this folder, or create `.env` from `.env.example` and populate it privately. Verify the path is `claudius-minor-live/.env`, not the original repo's file. Never display, commit, or copy credentials into public notes.
 
 - `MONGODB_URI`: a separate Atlas walkthrough cluster.
 - `DO_MODEL_ACCESS_KEY`: DigitalOcean model access key.
@@ -86,13 +104,17 @@ pnpm check
 
 The setup script creates collections and indexes, waits for vector-index readiness, and seeds Angela, Betty, and Caroline. Confirm it succeeds before demonstrating the app.
 
-Run the credential-backed integration checks:
+Run the complete credential-backed integration checks at `final` during preflight, then return to `start` before rehearsing:
 
 ```bash
+git switch --detach final
+pnpm check
 pnpm test:integration
+git switch --detach start
+pnpm dev
 ```
 
-These test files live under `tests/integration`, not the obsolete `integration` directory. Credential validation accepts the same key formats as the completed app. End-to-end memory checks require the completed checkpoint; earlier stages intentionally omit those capabilities.
+Do not run the full integration suite at `start`: extraction and memory-flow tests expect capabilities that are intentionally stubbed there. These test files live under `tests/integration`, not the obsolete `integration` directory. Credential validation accepts the same key formats as the completed app. Integration checks use real services and may consume inference and search credits.
 
 Skipped tests do not verify a service. Unit tests do not prove provider behavior, memory persistence, vector retrieval, or end-to-end isolation. Rehearse the actual app at every checkpoint. Measure embedding visibility in the demo cluster; do not use an invented latency or treat a successful profile query as proof of vector recall.
 
@@ -232,6 +254,18 @@ Tell Angela: `I now live in Montréal instead of Toronto.` After extraction and 
 Use the completed local checkpoint to demonstrate durability, fresh-thread recall, persona isolation, and supersession. The hosted app is a fallback, not the next checkpoint. The completed checkpoint matches the reference app code; databases and runtime configuration remain separate.
 
 On slide 20, keep the QR visible and direct attendees to https://mdb.link/hacktoberfest-2026-badge for the Build Agents with MongoDB Skill Badge. The course is https://learn.mongodb.com/courses/ai-agents-with-mongodb. Attendance alone does not earn the badge. Advance to Thank You for the brief sign-off.
+
+## Clear demo data
+
+From the current `main` worktree, run:
+
+```bash
+pnpm db:reset
+```
+
+Apps can stay running. Reset acquires the shared exclusive mutation lock and refuses if chat, extraction, or another reset is active. Wait and retry; do not clear another worker's lock. A stale crash lock requires the documented `demo:unlock` procedure.
+
+This irreversibly clears conversations, memories, checkpoints, checkpoint writes, and usage counters. It preserves users, collections, indexes, and other workers' locks in `claudius-minor-app`. No setup or vector-index rebuild is needed. It uses the current app's `DATABASE_NAME`, not the URI suffix. Back up anything needed first and refresh open app tabs afterward. Vector-search deletion visibility may lag briefly; a database failure can leave partial cleanup. The command is not present in previously created tags; do not assume the live worktree has it. No reset was performed when adding this script.
 
 ## Preflight and recovery
 

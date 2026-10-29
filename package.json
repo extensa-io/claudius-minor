@@ -17,6 +17,7 @@
     "check": "pnpm typecheck && pnpm lint && pnpm test && pnpm build",
     "verify:live": "node --env-file-if-exists=.env node_modules/tsx/dist/cli.mjs scripts/verify-live.ts",
     "demo:unlock": "node --env-file-if-exists=.env node_modules/tsx/dist/cli.mjs scripts/unlock-demo.ts",
+    "db:reset": "node --env-file-if-exists=.env node_modules/tsx/dist/cli.mjs scripts/reset-db.ts",
     "db:setup": "node --env-file-if-exists=.env node_modules/tsx/dist/cli.mjs scripts/db-setup.ts",
     "spike:do-model-list": "node --env-file-if-exists=.env node_modules/tsx/dist/cli.mjs scripts/spikes/do-model-list.ts",
     "spike:do-chat": "node --env-file-if-exists=.env node_modules/tsx/dist/cli.mjs scripts/spikes/do-chat.ts",
