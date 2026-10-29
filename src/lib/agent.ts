@@ -13,7 +13,7 @@ import { getCheckpointer } from "@/lib/checkpointer";
 import { assembleMemoryBlock, type RetrievedMemory } from "@/lib/memory";
 
 const webSearchTool = tool(async ({ query }) => JSON.stringify(await webSearch(query)), {
-  name: "web_search", description: "Search the web for current information", schema: z.object({ query: z.string() }),
+  name: "web_search", description: "Search the web for current evidence. Include today's date and the relevant year for time-sensitive questions. Returns titles, URLs, and snippets; cite only these exact URLs with Markdown links.", schema: z.object({ query: z.string() }),
 });
 const tools = [webSearchTool];
 const State = Annotation.Root({ ...MessagesAnnotation.spec, memoryContext: Annotation<string>({ reducer: (_previous, next) => next, default: () => "" }), usedMemories: Annotation<RetrievedMemory[]>({ reducer: (_previous, next) => next, default: () => [] }) });

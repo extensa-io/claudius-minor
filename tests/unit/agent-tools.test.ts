@@ -32,6 +32,14 @@ describe("checkpoint tool capability", () => {
     expect(state.messages.at(-1)?.text).toBe("Answer");
     if (toolsEnabled) {
       expect(mocks.bind).toHaveBeenCalled();
+      const tool = mocks.bind.mock.calls[0][0][0];
+      expect(tool.description).toContain("today's date");
+      expect(tool.description).toContain("exact URLs with Markdown links");
+      const system = mocks.invoke.mock.calls[0][0][0].text;
+      expect(system).toContain(new Date().toISOString().slice(0, 10));
+      expect(system).toContain("verify the latest completed event");
+      expect(system).toContain("only exact URLs returned by web_search");
+      expect(system).toContain("Never emit cursor/id objects");
       expect(mocks.search).toHaveBeenCalledExactlyOnceWith("recent event");
       expect(state.messages.some((message) => message.getType() === "tool")).toBe(true);
       expect(mocks.invoke).toHaveBeenCalledTimes(2);
