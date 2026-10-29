@@ -3,7 +3,6 @@ import { tool } from "@langchain/core/tools";
 import {
   Annotation,
   END,
-  MemorySaver,
   MessagesAnnotation,
   START,
   StateGraph,
@@ -15,6 +14,7 @@ import { boundedContext } from "@/lib/context";
 import { env, requiredEnv } from "@/lib/env";
 import { webSearch } from "@/lib/search";
 import { memoryNote, SYSTEM_PROMPT } from "@/lib/prompt";
+import { getCheckpointer } from "@/lib/checkpointer";
 import { type RetrievedMemory } from "@/lib/memory";
 
 const webSearchTool = tool(
@@ -89,9 +89,8 @@ const builder = new StateGraph(State)
 
 let graphPromise: Promise<ReturnType<typeof builder.compile>> | undefined;
 export async function getChatGraph() {
-  // TODO step 2: persist the same thread state with MongoDBSaver.
-  graphPromise ??= Promise.resolve(
-    builder.compile({ checkpointer: new MemorySaver() }),
+  graphPromise ??= getCheckpointer().then((checkpointer) =>
+    builder.compile({ checkpointer }),
   );
   return graphPromise;
 }
