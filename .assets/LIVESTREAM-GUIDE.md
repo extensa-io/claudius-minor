@@ -69,6 +69,7 @@ If the live worktree is absent, recreate it using the next section. If it alread
 From the existing repository, after confirming the live worktree is absent:
 
 ```bash
+cd /Users/nestor.daza/Massive/Repos/claudius-minor
 git fetch origin --tags --force
 git worktree add ../claudius-minor-live start
 cd /Users/nestor.daza/Massive/Repos/claudius-minor-live
@@ -185,20 +186,21 @@ VS Code displays the previous checkpoint on the left and the next checkpoint on 
 
 ### Repeat at each checkpoint
 
-At each step:
-
-1. Explain the missing capability.
-2. Open the prepared diff in VS Code using `git difftool`. Close the diff tabs when finished.
-3. Stop the local dev server with Ctrl+C.
-4. Confirm the worktree has no tracked edits.
-5. Load the next tag, run checks, and restart.
-6. Refresh localhost and demonstrate the result.
+Run `pnpm check` at every checkpoint during preflight, not during the broadcast. Before starting the walkthrough, inspect the worktree once:
 
 ```bash
 git status --short
 ```
 
-Do not force a switch or reset away unexpected edits. `git switch --detach` replaces tracked files with the prepared snapshot. It does not deploy anything or reset Atlas data. The untracked `.env` and ignored dependencies remain in place. Dependency files do not change between these `start` and `step-5` tags, so installation is not needed at every transition.
+Review any tracked edits before proceeding. At each on-air step:
+
+1. Explain the missing capability.
+2. Open the prepared diff in VS Code using `git difftool`. Close each diff tab to advance through files.
+3. Wait for chat and extraction to finish, then stop the local dev server with Control+C, not Command+C on macOS.
+4. Run the step's single switch-and-start command below.
+5. Refresh localhost and demonstrate the result.
+
+The `&&` starts the server only if switching succeeds. If Git refuses a switch, run `git status --short` and inspect the edits then. Do not force a switch or reset away unexpected edits. `git switch --detach` replaces tracked files with the prepared snapshot. It does not deploy anything or reset Atlas data. The untracked `.env` and ignored dependencies remain in place. Dependency files do not change between these `start` and `step-5` tags, so installation is not needed at every transition.
 
 ### Starting-app demonstration
 
@@ -223,11 +225,7 @@ git difftool --tool=vscode start step-1 -- src/lib/agent.ts src/lib/prompt.ts
 Explain the tool schema, model binding, conditional routing, ToolNode execution, result loop, and four-result search bound. Stop the server, then:
 
 ```bash
-git status --short
-git switch --detach step-1
-pnpm typecheck
-pnpm test
-pnpm dev
+git switch --detach step-1 && pnpm dev
 ```
 
 Refresh localhost and start a fresh conversation. Repeat the same current-event question without pasting the answer or earlier output. Show the search indicator, returned source links, and answer. Inspect the sources against the privately verified event date and fact. Tool execution does not prove accuracy; sources can be weak or stale. The model may choose not to search, so rehearse a clear request to search for current evidence. If search fails, label the failure and follow the recovery policy. Restarting discarded the previous in-process headers and transcript; no state migration occurs yet.
@@ -243,11 +241,7 @@ git difftool --tool=vscode step-1 step-2 -- src/lib/agent.ts src/lib/conversatio
 Close each diff tab when finished. Explain how the conversation-store accessor switches from process memory to MongoDB and the graph switches to MongoDBSaver with a stable `thread_id`. Stop the server, then:
 
 ```bash
-git status --short
-git switch --detach step-2
-pnpm typecheck
-pnpm test
-pnpm dev
+git switch --detach step-2 && pnpm dev
 ```
 
 Create a new conversation after loading Step 2. Send a message, restart the server, and reopen it. Earlier transient headers and MemorySaver messages do not automatically migrate to MongoDB. The application must verify conversation ownership before returning checkpoint-derived history.
@@ -263,11 +257,7 @@ git difftool --tool=vscode step-2 step-3
 Close each diff tab to advance through the changed files. Explain the extraction watermark, human/assistant text filtering, structured-output validation, and owner-scoped inserts. Stop the server, then:
 
 ```bash
-git status --short
-git switch --detach step-3
-pnpm typecheck
-pnpm test
-pnpm dev
+git switch --detach step-3 && pnpm dev
 ```
 
 Tell Angela: `I live in Toronto and I am learning pottery.` Wait for extraction and show the memory record. Tool calls and results must not become personal facts. The watermark advances only after successful processing. Use synthetic data and acknowledge that extraction can make mistakes.
@@ -283,11 +273,7 @@ git difftool --tool=vscode step-3 step-4 -- src/lib/agent.ts
 Close the diff tab when finished. Explain profile queries, vector search with owner/active-status pre-filters, context de-duplication, and retrieval failure handling. Stop the server, then:
 
 ```bash
-git status --short
-git switch --detach step-4
-pnpm typecheck
-pnpm test
-pnpm dev
+git switch --detach step-4 && pnpm dev
 ```
 
 Ask Angela a pottery-related question in a fresh conversation. Inspect the memories-used indicator. Switch to Betty and confirm Angela's facts are absent. Distinguish profile recall from vector recall: a document query may find a fact before its embedding becomes searchable. The persona cookie is a demo switcher, not authentication.
@@ -303,11 +289,7 @@ git difftool --tool=vscode step-4 step-5
 Close each diff tab to advance through the implementation and test changes. Explain insert, skip, supersede, and the lineage pointers. The prepared diff enables previously skipped action tests; no manual test editing is required. Stop the server, then:
 
 ```bash
-git status --short
-git switch --detach step-5
-pnpm typecheck
-pnpm test
-pnpm dev
+git switch --detach step-5 && pnpm dev
 ```
 
 Tell Angela: `I now live in Montréal instead of Toronto.` After extraction and indexing catch up, inspect the new active record and the superseded record's lineage. Semantic neighbors and recent writes supply comparison candidates. Exact duplicates are skipped, and a structured model comparison distinguishes replacement from compatible facts. The lineage update is not an atomic transaction.
