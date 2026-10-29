@@ -3,7 +3,7 @@ import { beforeEach, describe, expect, it, vi } from "vitest";
 const mocks = vi.hoisted(() => ({ release: vi.fn(), acquire: vi.fn(), budget: vi.fn(), find: vi.fn(), update: vi.fn(), bridge: vi.fn(), extract: vi.fn(), persist: vi.fn(), state: vi.fn(), execute: undefined as undefined | ((options: { writer: { write: ReturnType<typeof vi.fn> } }) => Promise<void>) }));
 vi.mock("ai", () => ({ createUIMessageStream: (options: { execute: typeof mocks.execute }) => { mocks.execute = options.execute; return {}; }, createUIMessageStreamResponse: () => new Response("stream") }));
 vi.mock("@/lib/user", () => ({ resolveCurrentUser: async () => ({ _id: new ObjectId("000000000000000000000001") }), UserError: class extends Error {} }));
-vi.mock("@/lib/db", () => ({ collections: { conversations: async () => ({ findOne: mocks.find, updateOne: mocks.update }) } }));
+vi.mock("@/lib/conversation-store", () => ({ getConversationStore: async () => ({ findOne: mocks.find, updateOne: mocks.update }) }));
 vi.mock("@/lib/operations", () => ({ acquireOperation: mocks.acquire, enforceChatBudget: mocks.budget, chatEnabled: () => true, OperationError: class extends Error {}, operationResponse: vi.fn() }));
 vi.mock("@/lib/agent", () => ({ getChatGraph: async () => ({ streamEvents: () => [], getState: mocks.state }) }));
 vi.mock("@/lib/stream", () => ({ bridgeEvents: mocks.bridge }));

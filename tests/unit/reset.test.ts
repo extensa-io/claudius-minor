@@ -6,8 +6,8 @@ const mocks = vi.hoisted(() => ({
 }));
 vi.mock("@/lib/user", () => ({ resolveCurrentUser: mocks.resolveCurrentUser, UserError: class extends Error {} }));
 vi.mock("@/lib/operations", () => ({ acquireOperation: async () => async () => {}, OperationError: class extends Error {}, operationResponse: vi.fn() }));
+vi.mock("@/lib/conversation-store", () => ({ getConversationStore: async () => ({ find: mocks.find, deleteMany: mocks.deleteConversations }) }));
 vi.mock("@/lib/db", () => ({ collections: {
-  conversations: async () => ({ find: mocks.find, deleteMany: mocks.deleteConversations }),
   memories: async () => ({ deleteMany: mocks.deleteMemories }),
 } }));
 vi.mock("@/lib/checkpointer", () => ({ getCheckpointer: async () => ({ deleteThread: mocks.deleteThread }) }));
