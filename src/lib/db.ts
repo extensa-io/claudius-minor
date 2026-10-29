@@ -3,7 +3,9 @@ import { env } from "@/lib/env";
 
 export const DATABASE_NAME = "claudius-minor-app";
 
-const globalDb = globalThis as typeof globalThis & { mongoClient?: Promise<MongoClient> };
+const globalDb = globalThis as typeof globalThis & {
+  mongoClient?: Promise<MongoClient>;
+};
 
 export async function getClient(): Promise<MongoClient> {
   if (!env.MONGODB_URI) throw new Error("Set MONGODB_URI to connect to Atlas.");
@@ -17,11 +19,15 @@ export async function getDb() {
 
 export const collections = {
   users: async () => (await getDb()).collection<UserRecord>("users"),
-  conversations: async () => (await getDb()).collection<ConversationRecord>("conversations"),
+  conversations: async () =>
+    (await getDb()).collection<ConversationRecord>("conversations"),
   memories: async () => (await getDb()).collection<MemoryRecord>("memories"),
 };
 
-export interface UserRecord { _id: ObjectId; name: string }
+export interface UserRecord {
+  _id: ObjectId;
+  name: string;
+}
 export interface ConversationRecord {
   _id?: ObjectId;
   userId: ObjectId;

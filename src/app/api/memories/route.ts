@@ -8,10 +8,26 @@ export async function GET(request: Request) {
   if (denied) return denied;
   try {
     const user = await resolveCurrentUser();
-    const memories = await (await collections.memories()).find({ userId: user._id }).sort({ status: 1, importance: -1, createdAt: -1 }).toArray();
-    return Response.json({ memories: memories.map((memory) => ({ id: memory._id.toString(), content: memory.content, category: memory.category, importance: memory.importance, status: memory.status, supersededBy: memory.supersededBy?.toString(), supersedes: memory.supersedes?.toString() })) });
+    const memories = await (
+      await collections.memories()
+    )
+      .find({ userId: user._id })
+      .sort({ status: 1, importance: -1, createdAt: -1 })
+      .toArray();
+    return Response.json({
+      memories: memories.map((memory) => ({
+        id: memory._id.toString(),
+        content: memory.content,
+        category: memory.category,
+        importance: memory.importance,
+        status: memory.status,
+        supersededBy: memory.supersededBy?.toString(),
+        supersedes: memory.supersedes?.toString(),
+      })),
+    });
   } catch (error) {
-    if (error instanceof UserError) return Response.json({ error: error.message }, { status: 400 });
+    if (error instanceof UserError)
+      return Response.json({ error: error.message }, { status: 400 });
     return databaseErrorResponse(error, "list memories");
   }
 }

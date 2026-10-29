@@ -11,6 +11,14 @@ export async function GET(request: Request) {
     const users = await collections.users();
     const personas = await users.find().sort({ name: 1 }).toArray();
     const cookie = (await cookies()).get(USER_COOKIE)?.value;
-    return Response.json({ users: personas.map((user) => ({ id: user._id.toString(), name: user.name })), currentUserId: cookie ?? null });
-  } catch (error) { return databaseErrorResponse(error, "list users"); }
+    return Response.json({
+      users: personas.map((user) => ({
+        id: user._id.toString(),
+        name: user.name,
+      })),
+      currentUserId: cookie ?? null,
+    });
+  } catch (error) {
+    return databaseErrorResponse(error, "list users");
+  }
 }

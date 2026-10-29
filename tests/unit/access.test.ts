@@ -2,21 +2,39 @@ import { afterEach, describe, expect, it, vi } from "vitest";
 import { accessError } from "@/lib/access";
 
 const code = "a-long-private-presenter-code";
-const request = (value?: string) => new Request("http://localhost/api/users", { headers: value === undefined ? {} : { "x-access-code": value } });
+const request = (value?: string) =>
+  new Request("http://localhost/api/users", {
+    headers: value === undefined ? {} : { "x-access-code": value },
+  });
 
 afterEach(() => vi.unstubAllEnvs());
 
 describe("presenter access", () => {
   it("fails closed in production without a configured code", () => {
-    expect(accessError(request(), { NODE_ENV: "production" })?.status).toBe(503);
-    expect(accessError(request(), { NODE_ENV: "production", APP_ACCESS_CODE: "" })?.status).toBe(503);
-    expect(accessError(request(), { NODE_ENV: "production", APP_ACCESS_CODE: "   " })?.status).toBe(503);
+    expect(accessError(request(), { NODE_ENV: "production" })?.status).toBe(
+      503,
+    );
+    expect(
+      accessError(request(), { NODE_ENV: "production", APP_ACCESS_CODE: "" })
+        ?.status,
+    ).toBe(503);
+    expect(
+      accessError(request(), { NODE_ENV: "production", APP_ACCESS_CODE: "   " })
+        ?.status,
+    ).toBe(503);
   });
 
   it("accepts any nonblank code length while requiring an exact match", () => {
     for (const value of ["x", "short"]) {
-      expect(accessError(request(value), { NODE_ENV: "production", APP_ACCESS_CODE: value })).toBeNull();
-      expect(accessError(request("wrong"), { APP_ACCESS_CODE: value })?.status).toBe(401);
+      expect(
+        accessError(request(value), {
+          NODE_ENV: "production",
+          APP_ACCESS_CODE: value,
+        }),
+      ).toBeNull();
+      expect(
+        accessError(request("wrong"), { APP_ACCESS_CODE: value })?.status,
+      ).toBe(401);
     }
   });
 
@@ -29,7 +47,14 @@ describe("presenter access", () => {
     expect(accessError(request(), source)?.status).toBe(401);
     expect(accessError(request("wrong"), source)?.status).toBe(401);
     expect(accessError(request(code.toUpperCase()), source)?.status).toBe(401);
-    expect(accessError(new Request(`http://localhost/api/users?accessCode=${code}`, { headers: { cookie: `accessCode=${code}` } }), source)?.status).toBe(401);
+    expect(
+      accessError(
+        new Request(`http://localhost/api/users?accessCode=${code}`, {
+          headers: { cookie: `accessCode=${code}` },
+        }),
+        source,
+      )?.status,
+    ).toBe(401);
     expect(accessError(request(code), source)).toBeNull();
   });
 
@@ -46,7 +71,9 @@ describe("presenter access", () => {
       (await import("@/app/api/memories/[id]/route")).DELETE,
     ];
     for (const handler of handlers) {
-      const response = await handler(request(), { params: Promise.resolve({ id: "invalid" }) });
+      const response = await handler(request(), {
+        params: Promise.resolve({ id: "invalid" }),
+      });
       expect(response.status).toBe(401);
     }
   });

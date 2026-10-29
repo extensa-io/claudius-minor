@@ -8,10 +8,22 @@ export async function GET(request: Request) {
   if (denied) return denied;
   try {
     const user = await resolveCurrentUser();
-    const conversations = await (await getConversationStore()).find({ userId: user._id }).sort({ updatedAt: -1 }).toArray();
-    return Response.json({ conversations: conversations.map((conversation) => ({ id: conversation._id.toString(), title: conversation.title, updatedAt: conversation.updatedAt })) });
+    const conversations = await (
+      await getConversationStore()
+    )
+      .find({ userId: user._id })
+      .sort({ updatedAt: -1 })
+      .toArray();
+    return Response.json({
+      conversations: conversations.map((conversation) => ({
+        id: conversation._id.toString(),
+        title: conversation.title,
+        updatedAt: conversation.updatedAt,
+      })),
+    });
   } catch (error) {
-    if (error instanceof UserError) return Response.json({ error: error.message }, { status: 400 });
+    if (error instanceof UserError)
+      return Response.json({ error: error.message }, { status: 400 });
     return databaseErrorResponse(error, "list conversations");
   }
 }

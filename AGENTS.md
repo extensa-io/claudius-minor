@@ -37,6 +37,10 @@ Vitest unit tests run without network access. Cover memory action decisions, ext
 
 Keep the `main` branch complete. Build `livestream` from it with a linear set of commits tagged `start`, `step-1`, `step-2`, `step-3`, `step-4`, `step-5`, and `final`. Each step must have a small diff and make its corresponding failing tests pass. `start` has no tools or web-search instruction. Step 1 introduces tools; Steps 2–5 introduce durable checkpoints, extraction, recall, and action decisions. Memory retrieval, extraction persistence, and action decisions at `start` are deliberate readable TODO stubs. `final` must match `main`.
 
+## Instructional code
+
+Keep code exceptionally readable on a shared screen. Run `pnpm format` after edits. Use multiline objects, model configuration, pipelines, and chained calls rather than dense one-line expressions. Wrap prompts into short lines with blank lines between instruction groups. Keep each checkpoint transition focused on its lesson, not formatting churn.
+
 ## Writing rules
 
 Use active voice. Do not use em dashes. Do not use colons in H1 titles. Keep comments brief and explain useful design choices. Do not add references to features removed from this project.
