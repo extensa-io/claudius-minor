@@ -32,7 +32,13 @@ The rebuilt checkpoints use the current app's UI, dependencies, credential valid
 
 ### Replace an existing worktree
 
-Stop its dev server and inspect it before removal:
+Stop its dev server. Move the terminal to the original repository before removing the live folder. For this machine:
+
+```bash
+cd /Users/nestor.daza/Massive/Repos/claudius-minor
+```
+
+Use your own original-repository path on another machine. Inspect the worktree before removal:
 
 ```bash
 git -C ../claudius-minor-live status --short
@@ -44,18 +50,31 @@ Save any work you want to retain. Back up its `.env` privately outside the workt
 git worktree remove ../claudius-minor-live
 ```
 
-Git may refuse because `.env` or other untracked files remain. After backing them up, remove only those files deliberately and retry; do not use `--force` to discard unreviewed work. If you already deleted the folder using the file browser, run `git worktree prune` before creating it again.
+Git may refuse because `.env` or other untracked files remain. After backing them up, remove only those files deliberately and retry; do not use `--force` to discard unreviewed work.
+
+If you already deleted the folder using the file browser, or `pnpm` reports `ENOENT` / `uv_cwd`, the terminal may still reference the deleted directory. Recover from an existing directory:
+
+```bash
+cd /Users/nestor.daza/Massive/Repos/claudius-minor
+git worktree prune
+git fetch origin --tags
+git worktree list
+```
+
+If the live worktree is absent, recreate it using the next section. If it already exists, skip `git worktree add` and enter the folder again. Even a recreated folder at the same path requires a fresh `cd`; the old terminal directory reference is no longer valid.
 
 ### Create the fresh worktree
 
-From the existing repository:
+From the existing repository, after confirming the live worktree is absent:
 
 ```bash
 git fetch origin --tags
 git worktree add ../claudius-minor-live start
-cd ../claudius-minor-live
+cd /Users/nestor.daza/Massive/Repos/claudius-minor-live
 pnpm install --frozen-lockfile
 ```
+
+Adjust the absolute path on another machine. Restore `.env` privately afterward. Recreating the worktree does not reset Atlas data. For a clean rehearsal database, use `pnpm db:reset` from current `main` as described under **Clear demo data**; the apps may stay online, but no chat or extraction may hold the mutation lock.
 
 Choose another path if this worktree already exists. Detached HEAD is intentional: this walkthrough loads snapshots without creating new commits. Keep the original `main` folder untouched, including any unrelated local changes. Use Node 22 or newer and the package manager declared by the checkpoint.
 
@@ -144,10 +163,30 @@ Keep the event below 60 minutes. Protect the badge CTA rather than extending the
 
 ## Checkpoint-switching process
 
+### Configure VS Code diffs once
+
+In the live worktree terminal:
+
+```bash
+git config --local diff.tool vscode
+git config --local difftool.vscode.cmd 'code --wait --diff "$LOCAL" "$REMOTE"'
+git config --local difftool.prompt false
+```
+
+If `code` is not found, open VS Code's Command Palette with Cmd+Shift+P and run **Shell Command: Install 'code' command in PATH**. Open a new terminal and verify `code --version`. Alternatively, on macOS:
+
+```bash
+git config --local difftool.vscode.cmd '"/Applications/Visual Studio Code.app/Contents/Resources/app/bin/code" --wait --diff "$LOCAL" "$REMOTE"'
+```
+
+VS Code displays the previous checkpoint on the left and the next checkpoint on the right. For multiple files, close the current diff tab to advance to the next file. These settings affect local Git configuration, not tracked source files. Difftool only displays changes; it does not load the next checkpoint. Increase the editor font size and keep comparisons side-by-side for screen sharing.
+
+### Repeat at each checkpoint
+
 At each step:
 
 1. Explain the missing capability.
-2. Display the diff. `git diff` does not apply it.
+2. Open the prepared diff in VS Code using `git difftool`. Close the diff tabs when finished.
 3. Stop the local dev server with Ctrl+C.
 4. Confirm the worktree has no tracked edits.
 5. Load the next tag, run checks, and restart.
@@ -174,10 +213,10 @@ Connect this to slides 8 and 9: the sidebar reads conversation headers; the curr
 Display:
 
 ```bash
-git diff start..step-1 -- src/lib/agent.ts
+git difftool start step-1 -- src/lib/agent.ts
 ```
 
-Explain the existing MongoDBSaver accessor and stable `thread_id`. Stop the server, then:
+Close the diff tab when finished. Explain the existing MongoDBSaver accessor and stable `thread_id`. Stop the server, then:
 
 ```bash
 git status --short
@@ -194,10 +233,10 @@ Create a new conversation after loading Step 1. Send a message, restart the serv
 Display:
 
 ```bash
-git diff step-1..step-2
+git difftool step-1 step-2
 ```
 
-Explain the extraction watermark, human/assistant text filtering, structured-output validation, and owner-scoped inserts. Stop the server, then:
+Close each diff tab to advance through the changed files. Explain the extraction watermark, human/assistant text filtering, structured-output validation, and owner-scoped inserts. Stop the server, then:
 
 ```bash
 git status --short
@@ -214,10 +253,10 @@ Tell Angela: `I live in Toronto and I am learning pottery.` Wait for extraction 
 Display:
 
 ```bash
-git diff step-2..step-3
+git difftool step-2 step-3 -- src/lib/agent.ts
 ```
 
-Explain profile queries, vector search with owner/active-status pre-filters, context de-duplication, and retrieval failure handling. Stop the server, then:
+Close the diff tab when finished. Explain profile queries, vector search with owner/active-status pre-filters, context de-duplication, and retrieval failure handling. Stop the server, then:
 
 ```bash
 git status --short
@@ -234,10 +273,10 @@ Ask Angela a pottery-related question in a fresh conversation. Inspect the memor
 Display:
 
 ```bash
-git diff step-3..step-4
+git difftool step-3 step-4
 ```
 
-Explain insert, skip, supersede, and the lineage pointers. The prepared diff enables previously skipped action tests; no manual test editing is required. Stop the server, then:
+Close each diff tab to advance through the implementation and test changes. Explain insert, skip, supersede, and the lineage pointers. The prepared diff enables previously skipped action tests; no manual test editing is required. Stop the server, then:
 
 ```bash
 git status --short
