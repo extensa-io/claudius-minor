@@ -1,4 +1,5 @@
 import { HumanMessage, SystemMessage } from "@langchain/core/messages";
+import { dispatchCustomEvent } from "@langchain/core/callbacks/dispatch";
 import { tool } from "@langchain/core/tools";
 import {
   Annotation,
@@ -15,7 +16,7 @@ import { env, requiredEnv } from "@/lib/env";
 import { webSearch } from "@/lib/search";
 import { memoryNote, SYSTEM_PROMPT } from "@/lib/prompt";
 import { getCheckpointer } from "@/lib/checkpointer";
-import { type RetrievedMemory } from "@/lib/memory";
+import { assembleMemoryBlock, type RetrievedMemory } from "@/lib/memory";
 
 const webSearchTool = tool(
   async ({ query }) => JSON.stringify(await webSearch(query)),
@@ -42,9 +43,71 @@ const State = Annotation.Root({
   }),
 });
 
-async function loadContext() {
-  // TODO step 4: retrieve owner-filtered profile and relevant memories.
-  return { memoryContext: "", usedMemories: [] };
+async function loadContext(
+  state: typeof State.State,
+  config: { configurable?: Record<string, unknown> },
+) {
+  const userId = config.configurable?.userId;
+  if (typeof userId !== "string")
+    return { memoryContext: "", usedMemories: [] };
+  try {
+    const { collections } = await import("@/lib/db");
+    const owner = new (await import("mongodb")).ObjectId(userId);
+    const collection = await collections.memories();
+    const profile = await collection
+      .find({ userId: owner, status: "active" })
+      .sort({ importance: -1 })
+      .limit(5)
+      .toArray();
+    const human = state.messages
+      .filter((message) => message.getType() === "human")
+      .slice(-3)
+      .map((message) => message.text)
+      .join("\n");
+    let relevant: typeof profile = [];
+    if (human) {
+      const results = await collection
+        .aggregate([
+          {
+            $vectorSearch: {
+              index: "memories_vector",
+              path: "content",
+              query: { text: human },
+              numCandidates: 100,
+              limit: 10,
+              filter: {
+                userId: { $eq: owner },
+                status: { $eq: "active" },
+              },
+            },
+          },
+          { $addFields: { score: { $meta: "vectorSearchScore" } } },
+          { $match: { score: { $gte: 0.65 } } },
+        ])
+        .toArray();
+      relevant = results as typeof profile;
+    }
+    const assembled = assembleMemoryBlock(profile, relevant);
+    if (assembled.memories.length > 0)
+      await dispatchCustomEvent(
+        "memories_used",
+        {
+          memories: assembled.memories.map((memory) => ({
+            id: memory._id.toString(),
+            content: memory.content,
+            category: memory.category,
+          })),
+        },
+        config,
+      );
+    return { memoryContext: assembled.text, usedMemories: assembled.memories };
+  } catch (error) {
+    console.error(
+      "Memory retrieval failed.",
+      error instanceof Error ? error.message : "unknown error",
+    );
+    return { memoryContext: "", usedMemories: [] };
+  }
 }
 
 async function agent(state: typeof State.State) {
